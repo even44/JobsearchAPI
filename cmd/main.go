@@ -44,7 +44,7 @@ func (h *homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
 	Get(id int) (jobApplications.JobApplication, error)
-	List() (map[int]jobApplications.JobApplication, error)
+	List() ([]jobApplications.JobApplication, error)
 	Update(id int, jobApplication jobApplications.JobApplication) error
 	Remove(id int) error
 }

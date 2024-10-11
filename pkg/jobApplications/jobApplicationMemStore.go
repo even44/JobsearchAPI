@@ -31,8 +31,13 @@ func (m MemStore) Get(id int) (JobApplication, error) {
 	return JobApplication{}, ErrNotFound
 }
 
-func (m MemStore) List() (map[int]JobApplication, error) {
-	return m.list, nil
+func (m MemStore) List() ([]JobApplication, error) {
+	var applicationList []JobApplication
+	for jobApplication := range m.list {
+		applicationList = append(applicationList, m.list[jobApplication])
+	}
+
+	return applicationList, nil
 }
 
 func (m MemStore) Update(id int, recipe JobApplication) error {
