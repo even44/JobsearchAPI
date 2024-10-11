@@ -1,0 +1,6 @@
+services:
+  jobSearchAPI:
+    image: ghcr.io/even44/jobsearchapi:dev
+    networks:
+      - default
+    restart: unless-stopped
