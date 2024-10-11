@@ -61,33 +61,37 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
 	var jobApplication jobApplications.JobApplication
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
 		print(fmt.Sprintf("Recieved following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
+
 	h.store.Add(jobApplication.Id, jobApplication)
-	
+
 	w.WriteHeader(http.StatusCreated)
-	
+
 }
-func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request)  {
-	
+func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
+
 	jobapplications, err := jobApplicationStore.List(h.store)
-	
+
 	if err != nil {
 		print(fmt.Sprintf("Recieved following error while getting jobApplications list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
 	jsonBytes, err := json.Marshal(jobapplications)
-	
+
+	if err != nil {
+		InternalServerErrorHandler(w, r)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
 }
-func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request)    {
+func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -95,9 +99,9 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
-	jobApplication, err := jobApplicationStore.Get(h.store, id)
-	
+
+	jobApplication, err := h.store.Get(id)
+
 	if err != nil {
 		print(fmt.Sprintf("Recieved following error while getting jobApplication with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -107,9 +111,14 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
+
 	jsonBytes, err := json.Marshal(jobApplication)
-	
+
+	if err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
 }
@@ -131,23 +140,55 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
+
 	var newJobApplication jobApplications.JobApplication
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&newJobApplication); err != nil {
 		print(fmt.Sprintf("Recieved following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
+
 	newJobApplication.Id = oldJobApplication.Id
-	
-	jobApplicationStore.Update(h.store, id, newJobApplication)
-	
+
+	err = h.store.Update(id, newJobApplication)
+
+	if err != nil {
+		print(fmt.Sprintf("Recieved following error while getting jobApplication with id %d: \n%s", id, err.Error()))
+		if err.Error() == "not found" {
+			NotFoundHandler(w, r)
+			return
+		}
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
-func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {}
+func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
+	strId := mux.Vars(r)["id"]
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		print(fmt.Sprintf("Recieved following error while converting id to int \n%s", err.Error()))
+		InternalServerErrorHandler(w, r)
+		return
+	}
 
+	err = h.store.Remove(id)
+
+	if err != nil {
+		print(fmt.Sprintf("Recieved following error while getting jobApplication with id %d: \n%s", id, err.Error()))
+		if err.Error() == "not found" {
+			NotFoundHandler(w, r)
+			return
+		}
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+}
 
 func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
