@@ -8,7 +8,7 @@ type JobApplication struct {
 	SearchDate string `json:"search_date"`
 	Deadline string `json:"deadline"`
 	Response bool `json:"response"`
-	Interview bool `json:"intervju"`
+	Interview bool `json:"interview"`
 	Done bool `json:"done"`
 	Link string `json:"link"`
 	
