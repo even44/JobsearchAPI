@@ -1,6 +1,7 @@
 services:
   jobSearchAPI:
+    container_name: JobSearchAPI
     image: ghcr.io/even44/jobsearchapi:dev
-    networks:
-      - default
+    ports:
+      - "3001:3001"
     restart: unless-stopped
