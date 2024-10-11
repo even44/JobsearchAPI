@@ -1,3 +1,10 @@
+
+### What is this?
+This is a personal WIP project I'm doing to learn go! It's an API that will support a web application that will keep track of my job applications.
+
+### Can't you just use a spreadsheet?
+Yes.. i could. But what do i learn from doing that?
+
 ### Endpoints
 ```
 GET /jobapplications - Returns a JSON list of all applications
