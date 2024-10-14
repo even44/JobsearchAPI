@@ -17,7 +17,7 @@ func main() {
 	fmt.Printf("Jobsearch API running on port: %d\n", port)
 
 	// Create the store and Jobapplication handler
-	store := jobApplications.NewMemStore()
+	store := jobApplications.NewMariaDBStore()
 	jobApplicationsHandler := NewJobApplicationHandler(store)
 	home := homeHandler{}
 

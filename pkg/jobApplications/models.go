@@ -2,7 +2,7 @@ package jobApplications
 
 // Represents a job application
 type JobApplication struct {
-	Id int `json:"id"`
+	Id int `json:"id" gorm:"primaryKey"`
 	Position string `json:"position"`
 	Company string `json:"company"`
 	SearchDate string `json:"search_date"`

@@ -17,8 +17,8 @@ func NewMemStore() *MemStore {
 	}
 }
 
-func (m MemStore) Add(id int, recipe JobApplication) error {
-	m.list[id] = recipe
+func (m MemStore) Add(id int, application JobApplication) error {
+	m.list[id] = application
 	return nil
 }
 
@@ -40,10 +40,10 @@ func (m MemStore) List() ([]JobApplication, error) {
 	return applicationList, nil
 }
 
-func (m MemStore) Update(id int, recipe JobApplication) error {
+func (m MemStore) Update(id int, application JobApplication) error {
 
 	if _, ok := m.list[id]; ok {
-		m.list[id] = recipe
+		m.list[id] = application
 		return nil
 	}
 
