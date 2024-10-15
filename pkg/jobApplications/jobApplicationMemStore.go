@@ -22,13 +22,13 @@ func (m MemStore) Add(id int, application JobApplication) error {
 	return nil
 }
 
-func (m MemStore) Get(id int) (JobApplication, error) {
+func (m MemStore) Get(id int) (*JobApplication, error) {
 
 	if val, ok := m.list[id]; ok {
-		return val, nil
+		return &val, nil
 	}
 
-	return JobApplication{}, ErrNotFound
+	return nil, ErrNotFound
 }
 
 func (m MemStore) List() ([]JobApplication, error) {

@@ -1,8 +1,10 @@
 package jobApplications
 
 import (
-    "gorm.io/driver/mysql"
-    "gorm.io/gorm"
+	"log"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type MariaDBStore struct {
@@ -12,8 +14,14 @@ type MariaDBStore struct {
 func NewMariaDBStore() *MariaDBStore{
 	db, err := connectToMariaDB()
 	if err != nil {
-		return nil
+		log.Fatal(err)
 	}
+	
+	err = db.AutoMigrate(&JobApplication{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &MariaDBStore{
 		db,
 	}
@@ -52,6 +60,29 @@ func (s MariaDBStore) List() ([]JobApplication, error){
 	var applications []JobApplication
 	s.db.Find(&applications)
 	return applications, nil
+}
+
+func (s MariaDBStore) Update(id int, application JobApplication) error {
+	result := s.db.Save(application)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (s MariaDBStore) Remove(id int) error {
+	
+	
+	application, err := s.Get(id)
+	if err != nil {
+		return err
+	}
+	result := s.db.Delete(application)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+	
 }
 
 

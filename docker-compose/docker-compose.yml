@@ -5,3 +5,12 @@ services:
     ports:
       - "3001:3001"
     restart: unless-stopped
+  db:
+    container_name: MariaDB
+    image: mariadb
+    restart: always
+    volumes:
+      - "./data:/var/lib/mysql:Z"
+    environment:
+      MARIADB_ROOT_PASSWORD: superroot
+    
