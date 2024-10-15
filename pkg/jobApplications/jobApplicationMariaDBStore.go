@@ -3,7 +3,6 @@ package jobApplications
 import (
     "gorm.io/driver/mysql"
     "gorm.io/gorm"
-    "log"
 )
 
 type MariaDBStore struct {
