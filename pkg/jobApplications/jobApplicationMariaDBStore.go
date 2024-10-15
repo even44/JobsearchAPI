@@ -28,7 +28,7 @@ func NewMariaDBStore() *MariaDBStore{
 }
 
 func connectToMariaDB() (*gorm.DB, error) {
-    dsn := "root:superrrot@tcp(localhost:3306)/jobsearchdb?charset=utf8mb4&parseTime=True&loc=Local"
+    dsn := "root:superrrot@tcp(localhost:3307)/jobsearchdb?charset=utf8mb4&parseTime=True&loc=Local"
     db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
     if err != nil {
         return nil, err
