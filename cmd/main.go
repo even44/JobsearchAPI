@@ -83,6 +83,9 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 		return
 	}
 	jsonBytes, err := json.Marshal(jobapplications)
+	if len(jobapplications) == 0 {
+		jsonBytes = []byte("[]")
+	}
 
 	if err != nil {
 		InternalServerErrorHandler(w, r)
@@ -90,6 +93,7 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
+
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
 	strId := mux.Vars(r)["id"]
