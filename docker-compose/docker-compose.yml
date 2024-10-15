@@ -13,4 +13,6 @@ services:
       - "./data:/var/lib/mysql:Z"
     environment:
       MARIADB_ROOT_PASSWORD: superroot
+
+
     
