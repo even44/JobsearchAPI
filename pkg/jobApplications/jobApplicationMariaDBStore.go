@@ -17,6 +17,7 @@ func NewMariaDBStore() *MariaDBStore{
 		log.Fatal(err)
 	}
 	
+	
 	err = db.AutoMigrate(&JobApplication{})
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +40,7 @@ func connectToMariaDB() (*gorm.DB, error) {
 
 
 func (s MariaDBStore) Add(id int, application JobApplication) error {
-	result := s.db.Create(application)
+	result := s.db.Create(&application)
     if result.Error != nil {
         return result.Error
     }
