@@ -63,7 +63,7 @@ func (s MariaDBStore) List() ([]JobApplication, error) {
 }
 
 func (s MariaDBStore) Update(id int, application JobApplication) error {
-	result := s.db.Save(application)
+	result := s.db.Save(&application)
 	if result.Error != nil {
 		return result.Error
 	}
