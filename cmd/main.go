@@ -17,7 +17,7 @@ func main() {
 	fmt.Printf("Jobsearch API running on port: %d\n", port)
 
 	// Create the store and Jobapplication handler
-	store := jobApplications.NewMemStore()
+	store := jobApplications.NewMariaDBStore()
 	jobApplicationsHandler := NewJobApplicationHandler(store)
 	home := homeHandler{}
 
@@ -43,8 +43,8 @@ func (h *homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
-	Get(id int) (jobApplications.JobApplication, error)
-	List() (map[int]jobApplications.JobApplication, error)
+	Get(id int) (*jobApplications.JobApplication, error)
+	List() ([]jobApplications.JobApplication, error)
 	Update(id int, jobApplication jobApplications.JobApplication) error
 	Remove(id int) error
 }
@@ -60,6 +60,8 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	
 	var jobApplication jobApplications.JobApplication
 
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
@@ -74,7 +76,8 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
-
+	enableCors(&w)
+	
 	jobapplications, err := jobApplicationStore.List(h.store)
 
 	if err != nil {
@@ -83,6 +86,9 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 		return
 	}
 	jsonBytes, err := json.Marshal(jobapplications)
+	if len(jobapplications) == 0 {
+		jsonBytes = []byte("[]")
+	}
 
 	if err != nil {
 		InternalServerErrorHandler(w, r)
@@ -90,8 +96,10 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonBytes)
+
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -123,6 +131,8 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -166,6 +176,8 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -198,4 +210,8 @@ func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 Not Found"))
+}
+
+func enableCors(w *http.ResponseWriter) {
+(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }

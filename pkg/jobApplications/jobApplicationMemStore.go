@@ -17,28 +17,33 @@ func NewMemStore() *MemStore {
 	}
 }
 
-func (m MemStore) Add(id int, recipe JobApplication) error {
-	m.list[id] = recipe
+func (m MemStore) Add(id int, application JobApplication) error {
+	m.list[id] = application
 	return nil
 }
 
-func (m MemStore) Get(id int) (JobApplication, error) {
+func (m MemStore) Get(id int) (*JobApplication, error) {
 
 	if val, ok := m.list[id]; ok {
-		return val, nil
+		return &val, nil
 	}
 
-	return JobApplication{}, ErrNotFound
+	return nil, ErrNotFound
 }
 
-func (m MemStore) List() (map[int]JobApplication, error) {
-	return m.list, nil
+func (m MemStore) List() ([]JobApplication, error) {
+	var applicationList []JobApplication
+	for jobApplication := range m.list {
+		applicationList = append(applicationList, m.list[jobApplication])
+	}
+
+	return applicationList, nil
 }
 
-func (m MemStore) Update(id int, recipe JobApplication) error {
+func (m MemStore) Update(id int, application JobApplication) error {
 
 	if _, ok := m.list[id]; ok {
-		m.list[id] = recipe
+		m.list[id] = application
 		return nil
 	}
 
