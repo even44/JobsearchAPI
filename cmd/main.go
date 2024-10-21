@@ -31,6 +31,7 @@ func main() {
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.UpdateJobApplication).Methods("PUT")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.DeleteJobApplication).Methods("DELETE")
 	
+	router.HandleFunc("/jobapplications", PreFlightHandler).Methods("OPTIONS")
 	router.HandleFunc("/jobapplications/{id}", PreFlightHandler).Methods("OPTIONS")
 	// Start server
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
