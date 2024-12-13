@@ -19,7 +19,6 @@ func main() {
 	// Create the store and Jobapplication handler
 	store := jobApplications.NewMariaDBStore()
 	jobApplicationsHandler := NewJobApplicationHandler(store)
-	home := homeHandler{}
 
 	// Create router
 	router := mux.NewRouter()
@@ -36,11 +35,6 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
 
-type homeHandler struct{}
-
-func (h *homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This is my home page i guess"))
-}
 
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
