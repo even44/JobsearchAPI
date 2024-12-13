@@ -1,4 +1,11 @@
 services:
+  jobSearchWebUI:
+    container_name: jobSearchWebUI
+    image: ghcr.io/even44/TODO
+    ports: "4200:4200"
+    restart: unless-stopped
+    depends_on:
+      - jobSearchAPI
   jobSearchAPI:
     container_name: JobSearchAPI
     image: ghcr.io/even44/jobsearchapi:dev
