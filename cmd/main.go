@@ -30,7 +30,9 @@ func main() {
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.GetJobApplication).Methods("GET")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.UpdateJobApplication).Methods("PUT")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.DeleteJobApplication).Methods("DELETE")
-
+	
+	router.HandleFunc("/jobapplications", PreFlightHandler).Methods("OPTIONS")
+	router.HandleFunc("/jobapplications/{id}", PreFlightHandler).Methods("OPTIONS")
 	// Start server
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
@@ -212,6 +214,13 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("404 Not Found"))
 }
 
+func PreFlightHandler(w http.ResponseWriter, r *http.Request){
+	enableCors(&w)
+	w.WriteHeader(http.StatusOK)
+}
+
 func enableCors(w *http.ResponseWriter) {
 (*w).Header().Set("Access-Control-Allow-Origin", "*")
+(*w).Header().Set("Access-Control-Request-Headers", "Content-Type")
+(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS")
 }
