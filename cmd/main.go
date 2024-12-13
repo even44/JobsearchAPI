@@ -35,7 +35,6 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
 
-
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
 	Get(id int) (*jobApplications.JobApplication, error)
@@ -214,7 +213,7 @@ func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
 
 func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "kornelius.local")
-	(*w).Header().Set("Access-Control-Request-Headers", "content-type")
+	(*w).Header().Set("Access-Control-Request-Headers", "*")
+	(*w).Header().Set("Content-Type", "application/json")
 	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS")
-	(*w).Header().Set("Accept", "/")
 }
