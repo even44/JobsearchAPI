@@ -24,7 +24,6 @@ func main() {
 	// Create router
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", home.ServeHTTP)
 	router.HandleFunc("/jobapplications", jobApplicationsHandler.ListJobApplications).Methods("GET")
 	router.HandleFunc("/jobapplications", jobApplicationsHandler.CreateJobApplication).Methods("POST")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.GetJobApplication).Methods("GET")
