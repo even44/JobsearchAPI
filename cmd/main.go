@@ -30,7 +30,7 @@ func main() {
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.GetJobApplication).Methods("GET")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.UpdateJobApplication).Methods("PUT")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.DeleteJobApplication).Methods("DELETE")
-	
+
 	router.HandleFunc("/jobapplications", PreFlightHandler).Methods("OPTIONS")
 	router.HandleFunc("/jobapplications/{id}", PreFlightHandler).Methods("OPTIONS")
 	// Start server
@@ -63,7 +63,7 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	
+
 	var jobApplication jobApplications.JobApplication
 
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
@@ -79,7 +79,7 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	
+
 	jobapplications, err := jobApplicationStore.List(h.store)
 
 	if err != nil {
@@ -134,7 +134,7 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	
+
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -179,7 +179,7 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
-	
+
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -214,13 +214,13 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("404 Not Found"))
 }
 
-func PreFlightHandler(w http.ResponseWriter, r *http.Request){
+func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
 	enableCors(&w)
 	w.WriteHeader(http.StatusOK)
 }
 
 func enableCors(w *http.ResponseWriter) {
-(*w).Header().Set("Access-Control-Allow-Origin", "*")
-(*w).Header().Set("Access-Control-Request-Headers", "Content-Type")
-(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Request-Headers", "content-type")
+	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS")
 }
