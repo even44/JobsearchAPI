@@ -215,5 +215,5 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
 	(*w).Header().Set("Content-Type", "application/json")
-	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS")
+	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 }
