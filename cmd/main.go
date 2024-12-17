@@ -221,8 +221,8 @@ func enableCors(w *http.ResponseWriter, r *http.Request) {
 		(*w).Header().Set("Content-Type", "application/json")
 		(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 	} else {
-		(*w).WriteHeader(http.StatusInternalServerError)
-		(*w).Write([]byte("500 Internal Server Error"))
+		InternalServerErrorHandler((*w), r)
+		return
 	}
 	
 }
