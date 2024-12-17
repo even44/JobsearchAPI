@@ -54,7 +54,8 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	if !checkOrigin(&w, r){return;}
+	enableCors(&w)
 
 	var jobApplication jobApplications.JobApplication
 
@@ -70,7 +71,8 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	if !checkOrigin(&w, r){return;}
+	enableCors(&w)
 
 	jobapplications, err := jobApplicationStore.List(h.store)
 
@@ -93,7 +95,8 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	if !checkOrigin(&w, r){return;}
+	enableCors(&w)
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -125,7 +128,8 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	if !checkOrigin(&w, r){return;}
+	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -170,7 +174,8 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	if !checkOrigin(&w, r){return;}
+	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -207,22 +212,27 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w, r)
+	enableCors(&w)
 	w.WriteHeader(http.StatusOK)
 }
 
-func enableCors(w *http.ResponseWriter, r *http.Request) {
-
+func checkOrigin(w *http.ResponseWriter, r* http.Request) bool {
 	if r.Header.Get("Origin") == "http://kornelius.lan:4200" ||
-		r.Header.Get("Origin") == "http://vidar.lan:4200" ||
-		r.Header.Get("Origin") == "https://jobbapi.even44.no" {
-		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
-		(*w).Header().Set("Content-Type", "application/json")
-		(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
-	} else {
-		InternalServerErrorHandler((*w), r)
-		return
-	}
+	r.Header.Get("Origin") == "http://vidar.lan:4200" ||
+	r.Header.Get("Origin") == "https://jobbapi.even44.no" {
+	(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+	return true
+} else {
+	InternalServerErrorHandler((*w), r)
+	return false
+}
+}
+
+
+func enableCors(w *http.ResponseWriter) {
+
+	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
+	(*w).Header().Set("Content-Type", "application/json")
+	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 	
 }
