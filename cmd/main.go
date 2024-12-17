@@ -215,7 +215,7 @@ func enableCors(w *http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Origin") == "http://kornelius.lan:4200" ||
 		r.Header.Get("Origin") == "http://vidar.lan:4200" ||
-		r.Header.Get("Origin") == "https://jobb.even44.no" {
+		r.Header.Get("Origin") == "https://jobbapi.even44.no" {
 		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 	} else {
 		(*w).Header().Set("Access-Control-Allow-Origin", "")
