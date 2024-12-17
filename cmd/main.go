@@ -217,10 +217,12 @@ func enableCors(w *http.ResponseWriter, r *http.Request) {
 		r.Header.Get("Origin") == "http://vidar.lan:4200" ||
 		r.Header.Get("Origin") == "https://jobbapi.even44.no" {
 		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
+		(*w).Header().Set("Content-Type", "application/json")
+		(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 	} else {
-		(*w).Header().Set("Access-Control-Allow-Origin", "")
+		(*w).WriteHeader(http.StatusInternalServerError)
+		(*w).Write([]byte("500 Internal Server Error"))
 	}
-	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
-	(*w).Header().Set("Content-Type", "application/json")
-	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
+	
 }
