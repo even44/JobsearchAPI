@@ -211,8 +211,13 @@ func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+func enableCors(w *http.ResponseWriter, r *http.Request) {
+
+	if r.Header.Get("Origin") == "http://kornelius.lan:4200" ||
+		r.Header.Get("Origin") == "http://vidar.lan:4200" ||
+		r.Header.Get("Origin") == "https://jobb.even44.no" {
+		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+	}
 	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
