@@ -54,7 +54,7 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 
 	var jobApplication jobApplications.JobApplication
 
@@ -70,7 +70,7 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 
 	jobapplications, err := jobApplicationStore.List(h.store)
 
@@ -93,7 +93,7 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -125,7 +125,7 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -170,7 +170,7 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -207,7 +207,7 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
-	enableCors(&w)
+	enableCors(&w, r)
 	w.WriteHeader(http.StatusOK)
 }
 
