@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine
+FROM golang:1.23-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -9,6 +9,10 @@ RUN go mod download && go mod verify
 COPY . .
 RUN go build -v -o /usr/local/bin/app/ ./...
 
-EXPOSE 3000
-
 CMD ["/usr/local/bin/app/cmd"]
+
+FROM scratch
+
+COPY --from=build /usr/local/bin/app .
+
+CMD ["./app"]
