@@ -3,3 +3,4 @@ docker-compose
 .gitignore
 .env
 *.code-workspace
+cmd.exe

@@ -19,26 +19,20 @@ func main() {
 	// Create the store and Jobapplication handler
 	store := jobApplications.NewMariaDBStore()
 	jobApplicationsHandler := NewJobApplicationHandler(store)
-	home := homeHandler{}
 
 	// Create router
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", home.ServeHTTP)
 	router.HandleFunc("/jobapplications", jobApplicationsHandler.ListJobApplications).Methods("GET")
 	router.HandleFunc("/jobapplications", jobApplicationsHandler.CreateJobApplication).Methods("POST")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.GetJobApplication).Methods("GET")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.UpdateJobApplication).Methods("PUT")
 	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.DeleteJobApplication).Methods("DELETE")
 
+	router.HandleFunc("/jobapplications", PreFlightHandler).Methods("OPTIONS")
+	router.HandleFunc("/jobapplications/{id}", PreFlightHandler).Methods("OPTIONS")
 	// Start server
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
-}
-
-type homeHandler struct{}
-
-func (h *homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This is my home page i guess"))
 }
 
 type jobApplicationStore interface {
@@ -60,8 +54,9 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
-	
+
 	var jobApplication jobApplications.JobApplication
 
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
@@ -76,8 +71,9 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
-	
+
 	jobapplications, err := jobApplicationStore.List(h.store)
 
 	if err != nil {
@@ -99,6 +95,7 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -131,8 +128,9 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
-	
+
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -176,8 +174,9 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
-	
+
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
 	if err != nil {
@@ -212,6 +211,28 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("404 Not Found"))
 }
 
+func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
+	enableCors(&w)
+	w.WriteHeader(http.StatusOK)
+}
+
+func checkOrigin(w *http.ResponseWriter, r* http.Request) bool {
+	if r.Header.Get("Origin") == "http://kornelius.lan:4200" ||
+	r.Header.Get("Origin") == "http://vidar.lan:4200" ||
+	r.Header.Get("Origin") == "https://jobbapi.even44.no" {
+	(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+	return true
+} else {
+	InternalServerErrorHandler((*w), r)
+	return false
+}
+}
+
+
 func enableCors(w *http.ResponseWriter) {
-(*w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
+	(*w).Header().Set("Content-Type", "application/json")
+	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
+	
 }
