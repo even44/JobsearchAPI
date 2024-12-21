@@ -212,6 +212,7 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
+	if !checkOrigin(&w, r){return;}
 	enableCors(&w)
 	w.WriteHeader(http.StatusOK)
 }
