@@ -1,3 +1,4 @@
+#### ❗❗❗ NB! Not designed to be deployed by others as there still are hardcoded parts.. will fix later :) ❗❗❗
 
 ### What is this?
 This is a personal WIP project I'm doing to learn go! It's an API that will support a web application that will keep track of my job applications.
