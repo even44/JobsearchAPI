@@ -7,10 +7,10 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-  environment:
-    API_PORT: 3002
-    TRUSTED_ORIGIN: http://localhost:3001
-    
+    environment:
+      API_PORT: 3002
+      TRUSTED_ORIGIN: http://localhost:3001
+
   db:
     container_name: MariaDB
     image: mariadb
