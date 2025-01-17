@@ -4,15 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/even44/JobsearchAPI/pkg/jobApplications"
 	"github.com/gorilla/mux"
 )
 
+var port int = 3001
+
 func main() {
 
-	const port int = 3001
+	
+
+	ParseEnv()
 
 	fmt.Printf("Jobsearch API running on port: %d\n", port)
 
@@ -34,6 +39,15 @@ func main() {
 	// Start server
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
+
+
+func ParseEnv () {
+	temp := os.Getenv("port")
+	if  temp != "" {
+		port = int(port)
+	}
+}
+
 
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
