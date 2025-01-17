@@ -16,4 +16,7 @@ FROM scratch
 
 COPY --from=build /usr/local/bin/app/ .
 
+ENV API_PORT="6001"
+ENV TRUSTED_ORIGIN="http://localhost:6001"
+
 CMD ["./cmd"]

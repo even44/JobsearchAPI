@@ -12,10 +12,9 @@ import (
 )
 
 var port int = 3001
+var trusted_origin = ""
 
 func main() {
-
-	
 
 	ParseEnv()
 
@@ -40,14 +39,26 @@ func main() {
 	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 }
 
+func ParseEnv() {
+	var temp string
 
-func ParseEnv () {
-	temp := os.Getenv("port")
-	if  temp != "" {
-		port = int(port)
+	// Should look like "6001" not "sixthousandandone"
+	temp = os.Getenv("API_PORT")
+	if temp != "" {
+		var err error
+		port, err = strconv.Atoi(temp)
+		if err != nil {
+			fmt.Println("Could not convert API_PORT to int")
+			panic(err)
+		}
+	}
+
+	// Should look like "http://ip:port" or "https://domain.example"
+	temp = os.Getenv("TRUSTED_ORIGIN")
+	if temp != "" {
+		trusted_origin = temp
 	}
 }
-
 
 type jobApplicationStore interface {
 	Add(id int, jobApplication jobApplications.JobApplication) error
@@ -68,7 +79,9 @@ func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 
 	var jobApplication jobApplications.JobApplication
@@ -85,7 +98,9 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 
 	jobapplications, err := jobApplicationStore.List(h.store)
@@ -109,7 +124,9 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(strId)
@@ -142,7 +159,9 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
@@ -188,7 +207,9 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
@@ -226,28 +247,27 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r){return;}
+	if !checkOrigin(&w, r) {
+		return
+	}
 	enableCors(&w)
 	w.WriteHeader(http.StatusOK)
 }
 
-func checkOrigin(w *http.ResponseWriter, r* http.Request) bool {
-	if r.Header.Get("Origin") == "http://kornelius.lan:4200" ||
-	r.Header.Get("Origin") == "http://vidar.lan:4200" ||
-	r.Header.Get("Origin") == "https://jobbapi.even44.no" {
-	(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-	return true
-} else {
-	InternalServerErrorHandler((*w), r)
-	return false
+func checkOrigin(w *http.ResponseWriter, r *http.Request) bool {
+	if r.Header.Get("Origin") == trusted_origin {
+		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		return true
+	} else {
+		InternalServerErrorHandler((*w), r)
+		return false
+	}
 }
-}
-
 
 func enableCors(w *http.ResponseWriter) {
 
 	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
-	
+
 }
