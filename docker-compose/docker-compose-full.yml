@@ -1,9 +1,9 @@
 services:
   jobSearchWebUI:
     container_name: jobSearchWebUI
-    image: ghcr.io/even44/jobsearchwebui:master
+    image: ghcr.io/even44/jobsearchwebui:dev
     ports: 
-      - "4200:4200"
+      - "4200:80"
     restart: unless-stopped
     depends_on:
       - jobSearchAPI
@@ -12,6 +12,9 @@ services:
     image: ghcr.io/even44/jobsearchapi:dev
     ports:
       - "3001:3001"
+    environment:
+      API_PORT: 3001
+      TRUSTED_ORIGIN: http://localhost:3001
     restart: unless-stopped
     depends_on:
       - db

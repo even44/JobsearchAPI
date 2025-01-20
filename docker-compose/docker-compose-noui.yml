@@ -3,7 +3,7 @@ services:
     container_name: JobSearchAPI
     image: ghcr.io/even44/jobsearchapi:dev
     ports:
-      - "3001:3002"
+      - "3001:3001"
     restart: unless-stopped
     depends_on:
       - db
