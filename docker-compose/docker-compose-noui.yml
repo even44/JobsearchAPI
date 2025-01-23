@@ -1,12 +1,4 @@
 services:
-  jobSearchWebUI:
-    container_name: jobSearchWebUI
-    image: ghcr.io/even44/jobsearchwebui:master
-    ports: 
-      - "4200:4200"
-    restart: unless-stopped
-    depends_on:
-      - jobSearchAPI
   jobSearchAPI:
     container_name: JobSearchAPI
     image: ghcr.io/even44/jobsearchapi:dev
@@ -15,6 +7,10 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    environment:
+      API_PORT: 3002
+      TRUSTED_ORIGIN: http://localhost:3001
+
   db:
     container_name: MariaDB
     image: mariadb
@@ -26,6 +22,3 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: superroot
       MARIADB_DATABASE: jobsearchdb
-
-
-    

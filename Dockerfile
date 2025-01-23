@@ -14,6 +14,9 @@ RUN go build -v -o /usr/local/bin/app/ ./...
 
 FROM scratch
 
-COPY --from=build /usr/local/bin/app .
+COPY --from=build /usr/local/bin/app/ .
 
-CMD ["./app"]
+ENV API_PORT="3001"
+ENV TRUSTED_ORIGIN="http://localhost:4200"
+
+CMD ["./cmd"]
