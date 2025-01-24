@@ -10,7 +10,7 @@ RUN go mod download && go mod verify
 
 # Copy rest of the files then build the app
 COPY . .
-RUN go build -v -o /usr/local/bin/app/ ./...
+RUN go build -v -o /usr/local/bin/app/ ./
 
 FROM scratch
 
