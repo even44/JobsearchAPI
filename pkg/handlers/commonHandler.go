@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/even44/JobsearchAPI/initializers"
+	"github.com/even44/JobsearchAPI/pkg/initializers"
 )
 
 

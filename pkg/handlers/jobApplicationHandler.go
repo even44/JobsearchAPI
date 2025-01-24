@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/even44/JobsearchAPI/models"
-	"github.com/even44/JobsearchAPI/jobapplicationstore"
+	"github.com/even44/JobsearchAPI/pkg/models"
+	"github.com/even44/JobsearchAPI/pkg/jobapplicationstore"
 	"github.com/gorilla/mux"
 )
 

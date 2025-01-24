@@ -1,6 +1,6 @@
 package jobapplicationstore
 
-import "github.com/even44/JobsearchAPI/models"
+import "github.com/even44/JobsearchAPI/pkg/models"
 
 type JobApplicationStore interface {
 	AddApplication(id int, jobApplication models.JobApplication) (*models.JobApplication, error)

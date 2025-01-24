@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/even44/JobsearchAPI/initializers"
-	"github.com/even44/JobsearchAPI/models"
+	"github.com/even44/JobsearchAPI/pkg/initializers"
+	"github.com/even44/JobsearchAPI/pkg/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

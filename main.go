@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/even44/JobsearchAPI/handlers"
-	"github.com/even44/JobsearchAPI/initializers"
-	"github.com/even44/JobsearchAPI/jobapplicationstore"
+	"github.com/even44/JobsearchAPI/pkg/handlers"
+	"github.com/even44/JobsearchAPI/pkg/initializers"
+	"github.com/even44/JobsearchAPI/pkg/jobapplicationstore"
 	"github.com/gorilla/mux"
 )
 
