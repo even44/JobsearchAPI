@@ -86,7 +86,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
-	tokenString, err := token.SignedString(initializers.ApiSecret)
+	tokenString, err := token.SignedString([]byte(initializers.ApiSecret))
 
 	if err != nil {
 		InternalServerErrorHandler(w, r)
