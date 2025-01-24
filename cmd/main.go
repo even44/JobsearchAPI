@@ -29,8 +29,6 @@ func main() {
 
 	ParseEnv()
 
-	
-
 	// Create the store and Jobapplication handler
 	store := jobApplications.NewMariaDBStore()
 	jobApplicationsHandler := NewJobApplicationHandler(store)
@@ -244,6 +242,10 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	}
 
 	newJobApplication.Id = oldJobApplication.Id
+	if newJobApplication.CompanyId == 0 {
+		logger.Printf("[UPDATE] Updated job application had companyid = 0, using old company id: %d", oldJobApplication.CompanyId)
+		newJobApplication.CompanyId = oldJobApplication.CompanyId
+	}
 
 	err = h.store.Update(id, newJobApplication)
 
@@ -420,7 +422,7 @@ func (h JobApplicationsHandler) UpdateCompany(w http.ResponseWriter, r *http.Req
 	err = h.store.UpdateCompany(id, newCompany)
 
 	if err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
+		print(fmt.Sprintf("[ERROR] Received following error while updating jobApplication with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
 			NotFoundHandler(w, r)
 			return
