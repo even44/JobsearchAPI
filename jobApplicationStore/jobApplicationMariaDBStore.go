@@ -1,53 +1,18 @@
-package jobApplications
+package jobapplicationstore
 
 import (
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
+	"github.com/even44/JobsearchAPI/initializers"
+	"github.com/even44/JobsearchAPI/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var db_url = ""
-var db_user = ""
-var db_password = ""
-var db_port = 0
-
 var logger *log.Logger
-
-func ParseEnv() {
-	var temp string
-
-	// Should look like "192.168.0.20" not "sixthousandandone"
-	temp = os.Getenv("DB_URL")
-	if temp != "" {
-		db_url = temp
-	}
-
-	temp = os.Getenv("DB_USER")
-	if temp != "" {
-		db_user = temp
-	}
-
-	temp = os.Getenv("DB_PASSWORD")
-	if temp != "" {
-		db_password = temp
-	}
-
-	temp = os.Getenv("DB_PORT")
-	if temp != "" {
-		var err error
-		db_port, err = strconv.Atoi(temp)
-		if err != nil {
-			log.Fatal("Could not convert DB_PORT to int")
-			panic(err)
-		}
-	}
-
-}
 
 type MariaDBStore struct {
 	db *gorm.DB
@@ -63,7 +28,7 @@ func NewMariaDBStore() *MariaDBStore {
 	}
 
 	logger.Println("Auto migrating database")
-	err = db.AutoMigrate(&JobApplication{}, &Company{}, &Contact{})
+	err = db.AutoMigrate(&models.JobApplication{}, &models.Company{}, &models.Contact{})
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -74,8 +39,8 @@ func NewMariaDBStore() *MariaDBStore {
 }
 
 func connectToMariaDB() (*gorm.DB, error) {
-	ParseEnv()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/jobsearchdb?charset=utf8mb4&parseTime=True&loc=Local", db_user, db_password, db_url, db_port)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/jobsearchdb?charset=utf8mb4&parseTime=True&loc=Local",
+		initializers.DbUser, initializers.DbPassword, initializers.DbURL, initializers.DbPort)
 	logger.Printf("Connection string: %s", dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -85,7 +50,7 @@ func connectToMariaDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func (s MariaDBStore) Add(id int, application JobApplication) (*JobApplication, error) {
+func (s MariaDBStore) AddApplication(id int, application models.JobApplication) (*models.JobApplication, error) {
 
 	logger.Println("[ADD] Adding Company")
 	company, err := s.AddCompany(0, application.Company)
@@ -95,7 +60,7 @@ func (s MariaDBStore) Add(id int, application JobApplication) (*JobApplication, 
 
 	logger.Println("[ADD] Adding Contacts")
 	for _, contact := range application.Company.Contacts {
-		s.AddCompanyContact(company.Id, contact)
+		s.AddContact(company.Id, contact)
 	}
 	logger.Println("[ADD] Done Adding Contacts")
 
@@ -108,7 +73,7 @@ func (s MariaDBStore) Add(id int, application JobApplication) (*JobApplication, 
 	}
 
 	logger.Println("[ADD] Getting created application")
-	resApplication, err := s.Get(application.Id)
+	resApplication, err := s.GetApplication(application.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +82,8 @@ func (s MariaDBStore) Add(id int, application JobApplication) (*JobApplication, 
 	return resApplication, nil
 
 }
-func (s MariaDBStore) Get(Id int) (*JobApplication, error) {
-	var application JobApplication
+func (s MariaDBStore) GetApplication(Id int) (*models.JobApplication, error) {
+	var application models.JobApplication
 	result := s.db.Preload("Company.Contacts").Preload("Company").First(&application, Id)
 	if result.Error != nil {
 		return nil, result.Error
@@ -126,13 +91,13 @@ func (s MariaDBStore) Get(Id int) (*JobApplication, error) {
 	logger.Printf("[GET] Got job application with position '%s' and company '%s' with id %d ", application.Position, application.Company.Name, application.Id)
 	return &application, nil
 }
-func (s MariaDBStore) List() ([]JobApplication, error) {
-	var applications []JobApplication
+func (s MariaDBStore) ListApplications() ([]models.JobApplication, error) {
+	var applications []models.JobApplication
 	s.db.Preload("Company.Contacts").Preload("Company").Find(&applications)
 	logger.Printf("[LIST] Got %d job applications", len(applications))
 	return applications, nil
 }
-func (s MariaDBStore) Update(id int, application JobApplication) error {
+func (s MariaDBStore) UpdateApplication(id int, application models.JobApplication) error {
 	result := s.db.Omit("Company").Save(&application)
 	if result.Error != nil {
 		return result.Error
@@ -140,8 +105,8 @@ func (s MariaDBStore) Update(id int, application JobApplication) error {
 	logger.Printf("[UPDATE] Updated job application with position '%s' with id %d ", application.Position, application.Id)
 	return nil
 }
-func (s MariaDBStore) Remove(id int) error {
-	application, err := s.Get(id)
+func (s MariaDBStore) RemoveApplication(id int) error {
+	application, err := s.GetApplication(id)
 	if err != nil {
 		return err
 	}
@@ -153,12 +118,12 @@ func (s MariaDBStore) Remove(id int) error {
 	return nil
 }
 
-func (s MariaDBStore) AddCompany(id int, company Company) (*Company, error) {
+func (s MariaDBStore) AddCompany(id int, company models.Company) (*models.Company, error) {
 
-	err := s.db.First(&Company{}, Company{Name: company.Name, Location: company.Location}).Error
+	err := s.db.First(&models.Company{}, models.Company{Name: company.Name, Location: company.Location}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Printf("[WARN][ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
-		s.db.First(&company, &Company{Name: company.Name, Location: company.Location})
+		s.db.First(&company, &models.Company{Name: company.Name, Location: company.Location})
 		return &company, err
 	}
 
@@ -175,8 +140,8 @@ func (s MariaDBStore) AddCompany(id int, company Company) (*Company, error) {
 	logger.Printf("[ADD] Created company with Name '%s' and id %d ", company.Name, company.Id)
 	return resCompany, nil
 }
-func (s MariaDBStore) GetCompany(Id int) (*Company, error) {
-	var company Company
+func (s MariaDBStore) GetCompany(Id int) (*models.Company, error) {
+	var company models.Company
 	result := s.db.Preload("Contacts").First(&company, Id)
 	if result.Error != nil {
 		logger.Printf("[ERROR][GET] Could not find company with id %d", Id)
@@ -185,15 +150,15 @@ func (s MariaDBStore) GetCompany(Id int) (*Company, error) {
 	logger.Printf("[GET] Got company with Name '%s' and id %d ", company.Name, company.Id)
 	return &company, nil
 }
-func (s MariaDBStore) ListCompanies() ([]Company, error) {
-	var companies []Company
+func (s MariaDBStore) ListCompanies() ([]models.Company, error) {
+	var companies []models.Company
 	s.db.Preload("Contacts").Find(&companies)
 	logger.Printf("[LIST] Got %d companies", len(companies))
 	return companies, nil
 }
-func (s MariaDBStore) UpdateCompany(Id int, company Company) error {
-	var existingCompany *Company
-	err := s.db.First(&existingCompany, Company{Name: company.Name, Location: company.Location}).Error
+func (s MariaDBStore) UpdateCompany(Id int, company models.Company) error {
+	var existingCompany *models.Company
+	err := s.db.First(&existingCompany, models.Company{Name: company.Name, Location: company.Location}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		if existingCompany.Id != Id {
 			logger.Printf("[WARN][UPDATE] Company with name %s and location %s already exists and will not be updated", company.Name, company.Location)
@@ -222,12 +187,12 @@ func (s MariaDBStore) RemoveCompany(id int) error {
 	return nil
 }
 
-func (s MariaDBStore) AddCompanyContact(company_id int, contact Contact) (*Contact, error) {
+func (s MariaDBStore) AddContact(company_id int, contact models.Contact) (*models.Contact, error) {
 
-	err := s.db.First(&Contact{}, Contact{Name: contact.Name}).Error
+	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Printf("[WARN][ADD] Contact with name %s already exists and will not be created", contact.Name)
-		s.db.First(&contact, &Contact{Name: contact.Name})
+		s.db.First(&contact, &models.Contact{Name: contact.Name})
 		return &contact, err
 	}
 	contact.CompanyId = company_id
@@ -236,15 +201,15 @@ func (s MariaDBStore) AddCompanyContact(company_id int, contact Contact) (*Conta
 		return nil, result.Error
 	}
 
-	resConstact, err := s.GetCompanyContact(contact.Id)
+	resConstact, err := s.GetContact(contact.Id)
 	if err != nil {
 		return nil, result.Error
 	}
 	logger.Printf("[ADD] Created contact with name %s", contact.Name)
 	return resConstact, nil
 }
-func (s MariaDBStore) GetCompanyContact(id int) (*Contact, error) {
-	var contact Contact
+func (s MariaDBStore) GetContact(id int) (*models.Contact, error) {
+	var contact models.Contact
 	result := s.db.First(&contact, id)
 	if result.Error != nil {
 		return nil, result.Error
@@ -252,16 +217,16 @@ func (s MariaDBStore) GetCompanyContact(id int) (*Contact, error) {
 	logger.Printf("[GET] Got contact with Name '%s' and id %d ", contact.Name, contact.Id)
 	return &contact, nil
 }
-func (s MariaDBStore) ListCompanyContacts() ([]Contact, error) {
-	var contacts []Contact
+func (s MariaDBStore) ListContacts() ([]models.Contact, error) {
+	var contacts []models.Contact
 	s.db.Find(&contacts)
 	logger.Printf("[LIST] Got %d companies", len(contacts))
 	return contacts, nil
 }
-func (s MariaDBStore) UpdateCompanyContact(id int, contact Contact) error {
+func (s MariaDBStore) UpdateContact(id int, contact models.Contact) error {
 
-	var existingContact *Contact
-	err := s.db.First(&existingContact, Contact{Name: contact.Name}).Error
+	var existingContact *models.Contact
+	err := s.db.First(&existingContact, models.Contact{Name: contact.Name}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		if existingContact.Id != id {
 			logger.Printf("[WARN][UPDATE] A different contact with name %s already exists and will not be updated", contact.Name)
@@ -281,8 +246,8 @@ func (s MariaDBStore) UpdateCompanyContact(id int, contact Contact) error {
 	logger.Printf("[UPDATE] Updated contact with name '%s' and company_id '%d' with id %d ", contact.Name, contact.CompanyId, contact.Id)
 	return nil
 }
-func (s MariaDBStore) RemoveCompanyContact(id int) error {
-	contact, err := s.GetCompanyContact(id)
+func (s MariaDBStore) RemoveContact(id int) error {
+	contact, err := s.GetContact(id)
 	if err != nil {
 		return err
 	}

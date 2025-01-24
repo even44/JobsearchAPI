@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -8,110 +8,20 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/even44/JobsearchAPI/pkg/jobApplications"
+	"github.com/even44/JobsearchAPI/models"
+	"github.com/even44/JobsearchAPI/jobapplicationstore"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
 
-var port int = 3001
-var trusted_origin = ""
-var logger *log.Logger
-
-func main() {
-
-	logger = log.New(os.Stdout, "MAIN: ", log.Ldate+log.Ltime+log.Lmsgprefix)
-
-	logger.Println("Loading .env file")
-	err := godotenv.Load()
-	if err != nil {
-		logger.Println("[ERROR] No .env file or error loading, skipping")
-	}
-
-	ParseEnv()
-
-	// Create the store and Jobapplication handler
-	store := jobApplications.NewMariaDBStore()
-	jobApplicationsHandler := NewJobApplicationHandler(store)
-
-	// Create router
-	router := mux.NewRouter()
-
-	router.HandleFunc("/jobapplications", jobApplicationsHandler.ListJobApplications).Methods("GET")
-	router.HandleFunc("/jobapplications", jobApplicationsHandler.CreateJobApplication).Methods("POST")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.GetJobApplication).Methods("GET")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.UpdateJobApplication).Methods("PUT")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationsHandler.DeleteJobApplication).Methods("DELETE")
-
-	router.HandleFunc("/companies", jobApplicationsHandler.ListCompanies).Methods("GET")
-	router.HandleFunc("/companies", jobApplicationsHandler.CreateCompany).Methods("POST")
-	router.HandleFunc("/companies/{id}", jobApplicationsHandler.GetCompany).Methods("GET")
-	router.HandleFunc("/companies/{id}", jobApplicationsHandler.UpdateCompany).Methods("PUT")
-	router.HandleFunc("/companies/{id}", jobApplicationsHandler.DeleteCompany).Methods("DELETE")
-
-	router.HandleFunc("/contacts", jobApplicationsHandler.ListContacts).Methods("GET")
-	router.HandleFunc("/contacts", jobApplicationsHandler.CreateContact).Methods("POST")
-	router.HandleFunc("/contacts/{id}", jobApplicationsHandler.GetContact).Methods("GET")
-	router.HandleFunc("/contacts/{id}", jobApplicationsHandler.UpdateContact).Methods("PUT")
-	router.HandleFunc("/contacts/{id}", jobApplicationsHandler.DeleteContact).Methods("DELETE")
-
-	router.HandleFunc("/jobapplications", PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/jobapplications/{id}", PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/companies", PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/companies/{id}", PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/contacts", PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/contacts/{id}", PreFlightHandler).Methods("OPTIONS")
-	// Start server
-	logger.Printf("Jobsearch API running on port: %d\n", port)
-	http.ListenAndServe(fmt.Sprintf(":%d", port), router)
-}
-
-func ParseEnv() {
-	logger.Println("Getting API env variables")
-	var temp string
-
-	// Should look like "6001" not "sixthousandandone"
-	temp = os.Getenv("API_PORT")
-	if temp != "" {
-		var err error
-		port, err = strconv.Atoi(temp)
-		if err != nil {
-			fmt.Println("[ERROR] Could not convert API_PORT to int")
-			panic(err)
-		}
-	}
-
-	// Should look like "http://ip:port" or "https://domain.example"
-	temp = os.Getenv("TRUSTED_ORIGIN")
-	if temp != "" {
-		trusted_origin = temp
-	}
-}
-
-type jobApplicationStore interface {
-	Add(id int, jobApplication jobApplications.JobApplication) (*jobApplications.JobApplication, error)
-	Get(id int) (*jobApplications.JobApplication, error)
-	List() ([]jobApplications.JobApplication, error)
-	Update(id int, jobApplication jobApplications.JobApplication) error
-	Remove(id int) error
-	AddCompany(id int, company jobApplications.Company) (*jobApplications.Company, error)
-	GetCompany(Id int) (*jobApplications.Company, error)
-	ListCompanies() ([]jobApplications.Company, error)
-	UpdateCompany(Id int, company jobApplications.Company) error
-	RemoveCompany(id int) error
-	AddCompanyContact(company_id int, contact jobApplications.Contact) (*jobApplications.Contact, error)
-	GetCompanyContact(id int) (*jobApplications.Contact, error)
-	ListCompanyContacts() ([]jobApplications.Contact, error)
-	UpdateCompanyContact(id int, contact jobApplications.Contact) error
-	RemoveCompanyContact(id int) error
-}
-
 type JobApplicationsHandler struct {
-	store jobApplicationStore
+	store  jobapplicationstore.JobApplicationStore
+	logger *log.Logger
 }
 
-func NewJobApplicationHandler(s jobApplicationStore) *JobApplicationsHandler {
+func NewJobApplicationHandler(s jobapplicationstore.JobApplicationStore) *JobApplicationsHandler {
 	return &JobApplicationsHandler{
 		store: s,
+		logger: log.New(os.Stdout, "[JOBAPPLICATION HANDLER]", log.Ldate+log.Ltime+log.Lmsgprefix),
 	}
 }
 
@@ -121,17 +31,17 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 	}
 	enableCors(&w)
 
-	var jobApplication jobApplications.JobApplication
-	logger.Printf("Received request to create job application from: %s", r.Host)
+	var jobApplication models.JobApplication
+	h.logger.Printf("Received request to create job application from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
 
-	resultJobApplication, err := h.store.Add(jobApplication.Id, jobApplication)
+	resultJobApplication, err := h.store.AddApplication(jobApplication.Id, jobApplication)
 	if err != nil {
-		logger.Println(err.Error())
+		h.logger.Println(err.Error())
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -151,8 +61,8 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 	}
 	enableCors(&w)
 
-	logger.Printf("Received request to list job applications from: %s", r.Host)
-	jobapplications, err := jobApplicationStore.List(h.store)
+	h.logger.Printf("Received request to list job applications from: %s", r.Host)
+	jobapplications, err := h.store.ListApplications()
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplications list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -178,7 +88,7 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to get job application with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to get job application with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -186,7 +96,7 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 		return
 	}
 
-	jobApplication, err := h.store.Get(id)
+	jobApplication, err := h.store.GetApplication(id)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -215,14 +125,14 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to update job application with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to update job application with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldJobApplication, err := jobApplicationStore.Get(h.store, id)
+	oldJobApplication, err := h.store.GetApplication(id)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -233,7 +143,7 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 		return
 	}
 
-	var newJobApplication jobApplications.JobApplication
+	var newJobApplication models.JobApplication
 
 	if err := json.NewDecoder(r.Body).Decode(&newJobApplication); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
@@ -243,11 +153,11 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 
 	newJobApplication.Id = oldJobApplication.Id
 	if newJobApplication.CompanyId == 0 {
-		logger.Printf("[UPDATE] Updated job application had companyid = 0, using old company id: %d", oldJobApplication.CompanyId)
+		h.logger.Printf("[UPDATE] Updated job application had companyid = 0, using old company id: %d", oldJobApplication.CompanyId)
 		newJobApplication.CompanyId = oldJobApplication.CompanyId
 	}
 
-	err = h.store.Update(id, newJobApplication)
+	err = h.store.UpdateApplication(id, newJobApplication)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -267,7 +177,7 @@ func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *h
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to delete job application with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to delete job application with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -275,7 +185,7 @@ func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *h
 		return
 	}
 
-	err = h.store.Remove(id)
+	err = h.store.RemoveApplication(id)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -297,8 +207,8 @@ func (h JobApplicationsHandler) CreateCompany(w http.ResponseWriter, r *http.Req
 	}
 	enableCors(&w)
 
-	var company jobApplications.Company
-	logger.Printf("Received request to create company from: %s", r.Host)
+	var company models.Company
+	h.logger.Printf("Received request to create company from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -307,7 +217,7 @@ func (h JobApplicationsHandler) CreateCompany(w http.ResponseWriter, r *http.Req
 
 	resultCompany, err := h.store.AddCompany(company.Id, company)
 	if err != nil {
-		logger.Fatal(err.Error())
+		h.logger.Fatal(err.Error())
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -327,8 +237,8 @@ func (h JobApplicationsHandler) ListCompanies(w http.ResponseWriter, r *http.Req
 	}
 	enableCors(&w)
 
-	logger.Printf("Received request to list companies from: %s", r.Host)
-	companies, err := jobApplicationStore.ListCompanies(h.store)
+	h.logger.Printf("Received request to list companies from: %s", r.Host)
+	companies, err := h.store.ListCompanies()
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -354,7 +264,7 @@ func (h JobApplicationsHandler) GetCompany(w http.ResponseWriter, r *http.Reques
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to get company with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to get company with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -391,14 +301,14 @@ func (h JobApplicationsHandler) UpdateCompany(w http.ResponseWriter, r *http.Req
 	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to update company with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to update company with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldCompany, err := jobApplicationStore.GetCompany(h.store, id)
+	oldCompany, err := h.store.GetCompany(id)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -409,7 +319,7 @@ func (h JobApplicationsHandler) UpdateCompany(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var newCompany jobApplications.Company
+	var newCompany models.Company
 
 	if err := json.NewDecoder(r.Body).Decode(&newCompany); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
@@ -439,7 +349,7 @@ func (h JobApplicationsHandler) DeleteCompany(w http.ResponseWriter, r *http.Req
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to delete company with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to delete company with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -469,17 +379,17 @@ func (h JobApplicationsHandler) CreateContact(w http.ResponseWriter, r *http.Req
 	}
 	enableCors(&w)
 
-	var contact jobApplications.Contact
-	logger.Printf("Received request to create contact from: %s", r.Host)
+	var contact models.Contact
+	h.logger.Printf("Received request to create contact from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
 
-	resultContact, err := h.store.AddCompanyContact(contact.CompanyId, contact)
+	resultContact, err := h.store.AddContact(contact.CompanyId, contact)
 	if err != nil {
-		logger.Fatal(err.Error())
+		h.logger.Fatal(err.Error())
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -499,8 +409,8 @@ func (h JobApplicationsHandler) ListContacts(w http.ResponseWriter, r *http.Requ
 	}
 	enableCors(&w)
 
-	logger.Printf("Received request to list contacts from: %s", r.Host)
-	contacts, err := jobApplicationStore.ListCompanyContacts(h.store)
+	h.logger.Printf("Received request to list contacts from: %s", r.Host)
+	contacts, err := h.store.ListContacts()
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -526,7 +436,7 @@ func (h JobApplicationsHandler) GetContact(w http.ResponseWriter, r *http.Reques
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to get contact with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to get contact with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -534,7 +444,7 @@ func (h JobApplicationsHandler) GetContact(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	contact, err := h.store.GetCompanyContact(id)
+	contact, err := h.store.GetContact(id)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
@@ -563,14 +473,14 @@ func (h JobApplicationsHandler) UpdateContact(w http.ResponseWriter, r *http.Req
 	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to update contact with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to update contact with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldContact, err := jobApplicationStore.GetCompanyContact(h.store, id)
+	oldContact, err := h.store.GetContact(id)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -581,7 +491,7 @@ func (h JobApplicationsHandler) UpdateContact(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var newContact jobApplications.Contact
+	var newContact models.Contact
 
 	if err := json.NewDecoder(r.Body).Decode(&newContact); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err))
@@ -589,10 +499,10 @@ func (h JobApplicationsHandler) UpdateContact(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	logger.Printf("%d => %d", newContact.Id, oldContact.Id)
+	h.logger.Printf("%d => %d", newContact.Id, oldContact.Id)
 	newContact.Id = oldContact.Id
 
-	err = h.store.UpdateCompanyContact(id, newContact)
+	err = h.store.UpdateContact(id, newContact)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err))
@@ -612,7 +522,7 @@ func (h JobApplicationsHandler) DeleteContact(w http.ResponseWriter, r *http.Req
 	}
 	enableCors(&w)
 	strId := mux.Vars(r)["id"]
-	logger.Printf("Received request to delete contact with id %s from: %s", strId, r.Host)
+	h.logger.Printf("Received request to delete contact with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
@@ -620,7 +530,7 @@ func (h JobApplicationsHandler) DeleteContact(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = h.store.RemoveCompanyContact(id)
+	err = h.store.RemoveContact(id)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
@@ -633,39 +543,5 @@ func (h JobApplicationsHandler) DeleteContact(w http.ResponseWriter, r *http.Req
 	}
 
 	w.WriteHeader(http.StatusOK)
-
-}
-
-func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("500 Internal Server Error"))
-}
-func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("404 Not Found"))
-}
-
-func PreFlightHandler(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
-	w.WriteHeader(http.StatusOK)
-}
-func checkOrigin(w *http.ResponseWriter, r *http.Request) bool {
-	if r.Header.Get("Origin") == trusted_origin {
-		(*w).Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		return true
-	} else {
-		logger.Printf("Received request with wrong origin, %s, from: %s", r.Header.Get("Origin"), r.Host)
-		InternalServerErrorHandler((*w), r)
-		return false
-	}
-}
-func enableCors(w *http.ResponseWriter) {
-
-	(*w).Header().Set("Access-Control-Allow-Headers", "content-type")
-	(*w).Header().Set("Content-Type", "application/json")
-	(*w).Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 
 }
