@@ -258,7 +258,7 @@ func (s MariaDBStore) ListCompanyContacts() ([]Contact, error) {
 	logger.Printf("[LIST] Got %d companies", len(contacts))
 	return contacts, nil
 }
-func (s MariaDBStore) UpdateCompanyContract(id int, contact Contact) error {
+func (s MariaDBStore) UpdateCompanyContact(id int, contact Contact) error {
 
 	var existingContact *Contact
 	err := s.db.First(&existingContact, Contact{Name: contact.Name}).Error
@@ -268,7 +268,11 @@ func (s MariaDBStore) UpdateCompanyContract(id int, contact Contact) error {
 			return err
 		}
 	}
-	contact.CompanyId = existingContact.CompanyId
+
+	if contact.CompanyId == 0 {
+		contact.CompanyId = existingContact.CompanyId
+	}
+
 	result := s.db.Save(&contact)
 	if result.Error != nil {
 		logger.Printf("[ERROR] %s", result.Error)

@@ -101,7 +101,7 @@ type jobApplicationStore interface {
 	AddCompanyContact(company_id int, contact jobApplications.Contact) (*jobApplications.Contact, error)
 	GetCompanyContact(id int) (*jobApplications.Contact, error)
 	ListCompanyContacts() ([]jobApplications.Contact, error)
-	UpdateCompanyContract(id int, contact jobApplications.Contact) error
+	UpdateCompanyContact(id int, contact jobApplications.Contact) error
 	RemoveCompanyContact(id int) error
 }
 
@@ -584,7 +584,7 @@ func (h JobApplicationsHandler) UpdateContact(w http.ResponseWriter, r *http.Req
 	var newContact jobApplications.Contact
 
 	if err := json.NewDecoder(r.Body).Decode(&newContact); err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
+		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err))
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -592,10 +592,10 @@ func (h JobApplicationsHandler) UpdateContact(w http.ResponseWriter, r *http.Req
 	logger.Printf("%d => %d", newContact.Id, oldContact.Id)
 	newContact.Id = oldContact.Id
 
-	err = h.store.UpdateCompanyContract(id, newContact)
+	err = h.store.UpdateCompanyContact(id, newContact)
 
 	if err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
+		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err))
 		if err.Error() == "not found" {
 			NotFoundHandler(w, r)
 			return
