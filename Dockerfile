@@ -19,4 +19,4 @@ COPY --from=build /usr/local/bin/app/ .
 ENV API_PORT="3001"
 ENV TRUSTED_ORIGIN="http://localhost:4200"
 
-CMD ["./cmd"]
+CMD ["./JobsearchAPI"]

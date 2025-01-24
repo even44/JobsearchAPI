@@ -2,3 +2,4 @@
 *.code-workspace
 docker-compose/data
 cmd.exe
+JobsearchAPI*
