@@ -59,7 +59,8 @@ func main() {
 	router.HandleFunc("/contacts/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
 	router.HandleFunc("/signup", userHandler.SignUp).Methods("POST")
-	
+	router.HandleFunc("/login", userHandler.Login).Methods("POST")
+
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
 	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), router)
