@@ -24,7 +24,7 @@ func main() {
 	logger.Println("Loading .env file")
 	err := godotenv.Load()
 	if err != nil {
-		logger.Fatal("Error loading .env file")
+		logger.Println("No .env file or error loading, skipping")
 	}
 
 	ParseEnv()
