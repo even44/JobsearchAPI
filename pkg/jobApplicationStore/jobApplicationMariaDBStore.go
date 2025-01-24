@@ -1,4 +1,4 @@
-package jobapplicationstore
+package jobApplicationStore
 
 import (
 	"errors"

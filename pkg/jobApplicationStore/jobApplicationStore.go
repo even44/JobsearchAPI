@@ -1,4 +1,4 @@
-package jobapplicationstore
+package jobApplicationStore
 
 import "github.com/even44/JobsearchAPI/pkg/models"
 
