@@ -477,7 +477,7 @@ func (h JobApplicationsHandler) CreateContact(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resultContact, err := h.store.AddCompanyContact(contact.Id, contact)
+	resultContact, err := h.store.AddCompanyContact(contact.CompanyId, contact)
 	if err != nil {
 		logger.Fatal(err.Error())
 		InternalServerErrorHandler(w, r)
