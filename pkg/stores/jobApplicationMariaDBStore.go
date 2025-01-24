@@ -2,31 +2,10 @@ package stores
 
 import (
 	"errors"
-	"log"
-	"os"
 
 	"github.com/even44/JobsearchAPI/pkg/models"
 	"gorm.io/gorm"
 )
-
-type MariaDBStore struct {
-	db     *gorm.DB
-	logger *log.Logger
-}
-
-func NewMariaDBStore(db *gorm.DB) *MariaDBStore {
-	var logger = log.New(os.Stdout, "MariaDBStore: ", log.Ldate+log.Ltime+log.Lmsgprefix)
-	logger.Println("Auto migrating database")
-	err := db.AutoMigrate(&models.JobApplication{}, &models.Company{}, &models.Contact{})
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	return &MariaDBStore{
-		db,
-		logger,
-	}
-}
 
 func (s MariaDBStore) AddApplication(id int, application models.JobApplication) (*models.JobApplication, error) {
 

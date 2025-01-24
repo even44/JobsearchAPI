@@ -8,6 +8,7 @@ import (
 // Api Envs
 var ApiPort int = 3001
 var ApiTrustedOrigin string = ""
+var ApiSecret string = "setthisasasecretenv"
 
 // Db Envs
 var DbURL = ""
@@ -60,5 +61,10 @@ func ParseEnvVariables() {
 			logger.Fatal("[ERROR] Could not convert DB_PORT to int")
 			panic(err)
 		}
+	}
+
+	temp = os.Getenv("DB_PORT")
+	if temp != "" {
+		ApiSecret = temp
 	}
 }

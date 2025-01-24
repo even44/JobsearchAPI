@@ -20,8 +20,8 @@ type JobApplicationsHandler struct {
 
 func NewJobApplicationHandler(s stores.JobApplicationStore) *JobApplicationsHandler {
 	return &JobApplicationsHandler{
-		store: s,
-		logger: log.New(os.Stdout, "[JOBAPPLICATION HANDLER]", log.Ldate+log.Ltime+log.Lmsgprefix),
+		store:  s,
+		logger: log.New(os.Stdout, "[JOBAPPLICATION] ", log.Ldate+log.Ltime+log.Lmsgprefix),
 	}
 }
 

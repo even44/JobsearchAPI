@@ -15,10 +15,13 @@ import (
 var logger *log.Logger
 
 func init() {
+
 	logger = log.New(os.Stdout, "MAIN: ", log.Ldate+log.Ltime+log.Lmsgprefix)
+
 	initializers.LoadEnvVariables()
 	initializers.ParseEnvVariables()
 	initializers.ConnectToMariaDB()
+	initializers.SyncDatabase()
 }
 
 func main() {
@@ -26,7 +29,7 @@ func main() {
 	// Create the store and Jobapplication handler
 	store := stores.NewMariaDBStore(initializers.Db)
 	jobApplicationHandler := handlers.NewJobApplicationHandler(store)
-
+	userHandler := handlers.NewUserHandler(store)
 	// Create router
 	router := mux.NewRouter()
 
@@ -54,6 +57,9 @@ func main() {
 	router.HandleFunc("/companies/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 	router.HandleFunc("/contacts", handlers.PreFlightHandler).Methods("OPTIONS")
 	router.HandleFunc("/contacts/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
+
+	router.HandleFunc("/signup", userHandler.SignUp).Methods("POST")
+	
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
 	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), router)
