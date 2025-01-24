@@ -8,7 +8,7 @@ import (
 
 	"github.com/even44/JobsearchAPI/pkg/handlers"
 	"github.com/even44/JobsearchAPI/pkg/initializers"
-	"github.com/even44/JobsearchAPI/pkg/jobApplicationStore"
+	"github.com/even44/JobsearchAPI/pkg/stores"
 	"github.com/gorilla/mux"
 )
 
@@ -18,12 +18,13 @@ func init() {
 	logger = log.New(os.Stdout, "MAIN: ", log.Ldate+log.Ltime+log.Lmsgprefix)
 	initializers.LoadEnvVariables()
 	initializers.ParseEnvVariables()
+	initializers.ConnectToMariaDB()
 }
 
 func main() {
 
 	// Create the store and Jobapplication handler
-	store := jobApplicationStore.NewMariaDBStore()
+	store := stores.NewMariaDBStore(initializers.Db)
 	jobApplicationHandler := handlers.NewJobApplicationHandler(store)
 
 	// Create router

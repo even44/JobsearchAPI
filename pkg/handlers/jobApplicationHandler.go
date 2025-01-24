@@ -9,16 +9,16 @@ import (
 	"strconv"
 
 	"github.com/even44/JobsearchAPI/pkg/models"
-	"github.com/even44/JobsearchAPI/pkg/jobApplicationStore"
+	"github.com/even44/JobsearchAPI/pkg/stores"
 	"github.com/gorilla/mux"
 )
 
 type JobApplicationsHandler struct {
-	store  jobApplicationStore.JobApplicationStore
+	store  stores.JobApplicationStore
 	logger *log.Logger
 }
 
-func NewJobApplicationHandler(s jobApplicationStore.JobApplicationStore) *JobApplicationsHandler {
+func NewJobApplicationHandler(s stores.JobApplicationStore) *JobApplicationsHandler {
 	return &JobApplicationsHandler{
 		store: s,
 		logger: log.New(os.Stdout, "[JOBAPPLICATION HANDLER]", log.Ldate+log.Ltime+log.Lmsgprefix),
