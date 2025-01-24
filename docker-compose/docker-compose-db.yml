@@ -1,0 +1,12 @@
+services:
+ db:
+    container_name: MariaDB
+    image: mariadb
+    restart: always
+    ports:
+      - "3307:3306"
+    volumes:
+      - "./data:/var/lib/mysql:Z"
+    environment:
+      MARIADB_ROOT_PASSWORD: superroot
+      MARIADB_DATABASE: jobsearchdb

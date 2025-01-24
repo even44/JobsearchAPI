@@ -14,7 +14,7 @@ services:
       - "3001:3001"
     environment:
       API_PORT: 3001
-      TRUSTED_ORIGIN: http://localhost:3001
+      TRUSTED_ORIGIN: http://localhost:4200
     restart: unless-stopped
     depends_on:
       - db
