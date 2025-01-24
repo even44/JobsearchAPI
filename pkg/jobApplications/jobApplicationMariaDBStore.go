@@ -113,7 +113,7 @@ func (s MariaDBStore) Add(id int, application JobApplication) (*JobApplication, 
 		return nil, err
 	}
 
-	logger.Printf("Created job application with position '%s' and company '%s' with id %d ", resApplication.Position, resApplication.Company.Name, resApplication.Id)
+	logger.Printf("[ADD] Created job application with position '%s' and company '%s' with id %d ", resApplication.Position, resApplication.Company.Name, resApplication.Id)
 	return resApplication, nil
 
 }
@@ -133,11 +133,11 @@ func (s MariaDBStore) List() ([]JobApplication, error) {
 	return applications, nil
 }
 func (s MariaDBStore) Update(id int, application JobApplication) error {
-	result := s.db.Save(&application)
+	result := s.db.Omit("Company").Save(&application)
 	if result.Error != nil {
 		return result.Error
 	}
-	logger.Printf("[UPDATE] Updated job application with position '%s' and company '%s' with id %d ", application.Position, application.Company.Name, application.Id)
+	logger.Printf("[UPDATE] Updated job application with position '%s' with id %d ", application.Position, application.Id)
 	return nil
 }
 func (s MariaDBStore) Remove(id int) error {
@@ -157,7 +157,7 @@ func (s MariaDBStore) AddCompany(id int, company Company) (*Company, error) {
 
 	err := s.db.First(&Company{}, Company{Name: company.Name, Location: company.Location}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Printf("[ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
+		logger.Printf("[WARN][ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
 		s.db.First(&company, &Company{Name: company.Name, Location: company.Location})
 		return &company, err
 	}
