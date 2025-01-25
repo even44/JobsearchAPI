@@ -32,7 +32,7 @@ func main() {
 	// Create the store and Jobapplication handler
 
 	// Create public
-	global := mux.NewRouter()
+	global := mux.NewRouter().NewRoute()
 	auth := global.PathPrefix("/auth").Subrouter()
 	public := global.PathPrefix("/public").Subrouter()
 
