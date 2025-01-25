@@ -12,6 +12,7 @@ import (
 	"github.com/even44/JobsearchAPI/pkg/stores"
 	"github.com/gorilla/mux"
 )
+var JAH *JobApplicationsHandler
 
 type JobApplicationsHandler struct {
 	store  stores.JobApplicationStore

@@ -10,12 +10,20 @@ func (s MariaDBStore) Add(user *models.User) error {
 	return nil
 }
 
-func (s MariaDBStore) Get(email string) (*models.User, error) {
+func (s MariaDBStore) GetByEmail(email string) (*models.User, error) {
 	var user models.User
 	err := s.db.First(&user, models.User{Email: email}).Error
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
 
+func (s MariaDBStore) GetById(id int) (*models.User, error) {
+	var user models.User
+	err := s.db.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

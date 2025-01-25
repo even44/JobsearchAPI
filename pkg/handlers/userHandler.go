@@ -14,6 +14,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var UH *UserHandler
+
 type UserHandler struct {
 	store  stores.UserStore
 	logger *log.Logger
@@ -51,6 +53,7 @@ func (h UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		InternalServerErrorHandler(w, r)
 		h.logger.Printf("[ERROR] Could not create user \n%s", err)
+		return
 	}
 
 	// Respond
@@ -68,12 +71,13 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Look up user based on email
-	user, err := h.store.Get(body.Email)
+	user, err := h.store.GetByEmail(body.Email)
 	if err != nil {
 		InvalidEmailOrPasswordHandler(w, r)
 		return
 	}
 
+	//user.Password is password hash in this case
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
 	if err != nil {

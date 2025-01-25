@@ -8,7 +8,7 @@ import (
 
 	"github.com/even44/JobsearchAPI/pkg/handlers"
 	"github.com/even44/JobsearchAPI/pkg/initializers"
-	"github.com/even44/JobsearchAPI/pkg/stores"
+	"github.com/even44/JobsearchAPI/pkg/middleware"
 	"github.com/gorilla/mux"
 )
 
@@ -22,46 +22,50 @@ func init() {
 	initializers.ParseEnvVariables()
 	initializers.ConnectToMariaDB()
 	initializers.SyncDatabase()
+
+	handlers.UH = handlers.NewUserHandler(initializers.Store)
+	handlers.JAH = handlers.NewJobApplicationHandler(initializers.Store)
 }
 
 func main() {
 
 	// Create the store and Jobapplication handler
-	store := stores.NewMariaDBStore(initializers.Db)
-	jobApplicationHandler := handlers.NewJobApplicationHandler(store)
-	userHandler := handlers.NewUserHandler(store)
-	// Create router
-	router := mux.NewRouter()
 
-	router.HandleFunc("/jobapplications", jobApplicationHandler.ListJobApplications).Methods("GET")
-	router.HandleFunc("/jobapplications", jobApplicationHandler.CreateJobApplication).Methods("POST")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationHandler.GetJobApplication).Methods("GET")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationHandler.UpdateJobApplication).Methods("PUT")
-	router.HandleFunc("/jobapplications/{id}", jobApplicationHandler.DeleteJobApplication).Methods("DELETE")
+	// Create public
+	global := mux.NewRouter()
+	auth := global.PathPrefix("/auth").Subrouter()
+	public := global.PathPrefix("/public").Subrouter()
 
-	router.HandleFunc("/companies", jobApplicationHandler.ListCompanies).Methods("GET")
-	router.HandleFunc("/companies", jobApplicationHandler.CreateCompany).Methods("POST")
-	router.HandleFunc("/companies/{id}", jobApplicationHandler.GetCompany).Methods("GET")
-	router.HandleFunc("/companies/{id}", jobApplicationHandler.UpdateCompany).Methods("PUT")
-	router.HandleFunc("/companies/{id}", jobApplicationHandler.DeleteCompany).Methods("DELETE")
+	auth.HandleFunc("/jobapplications", handlers.JAH.ListJobApplications).Methods("GET")
+	auth.HandleFunc("/jobapplications", handlers.JAH.CreateJobApplication).Methods("POST")
+	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.GetJobApplication).Methods("GET")
+	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.UpdateJobApplication).Methods("PUT")
+	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.DeleteJobApplication).Methods("DELETE")
+	auth.HandleFunc("/jobapplications", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/jobapplications/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
-	router.HandleFunc("/contacts", jobApplicationHandler.ListContacts).Methods("GET")
-	router.HandleFunc("/contacts", jobApplicationHandler.CreateContact).Methods("POST")
-	router.HandleFunc("/contacts/{id}", jobApplicationHandler.GetContact).Methods("GET")
-	router.HandleFunc("/contacts/{id}", jobApplicationHandler.UpdateContact).Methods("PUT")
-	router.HandleFunc("/contacts/{id}", jobApplicationHandler.DeleteContact).Methods("DELETE")
+	auth.HandleFunc("/companies", handlers.JAH.ListCompanies).Methods("GET")
+	auth.HandleFunc("/companies", handlers.JAH.CreateCompany).Methods("POST")
+	auth.HandleFunc("/companies/{id}", handlers.JAH.GetCompany).Methods("GET")
+	auth.HandleFunc("/companies/{id}", handlers.JAH.UpdateCompany).Methods("PUT")
+	auth.HandleFunc("/companies/{id}", handlers.JAH.DeleteCompany).Methods("DELETE")
+	auth.HandleFunc("/companies", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/companies/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
-	router.HandleFunc("/jobapplications", handlers.PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/jobapplications/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/companies", handlers.PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/companies/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/contacts", handlers.PreFlightHandler).Methods("OPTIONS")
-	router.HandleFunc("/contacts/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/contacts", handlers.JAH.ListContacts).Methods("GET")
+	auth.HandleFunc("/contacts", handlers.JAH.CreateContact).Methods("POST")
+	auth.HandleFunc("/contacts/{id}", handlers.JAH.GetContact).Methods("GET")
+	auth.HandleFunc("/contacts/{id}", handlers.JAH.UpdateContact).Methods("PUT")
+	auth.HandleFunc("/contacts/{id}", handlers.JAH.DeleteContact).Methods("DELETE")
+	auth.HandleFunc("/contacts", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/contacts/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
-	router.HandleFunc("/signup", userHandler.SignUp).Methods("POST")
-	router.HandleFunc("/login", userHandler.Login).Methods("POST")
+	public.HandleFunc("/signup", handlers.UH.SignUp).Methods("POST")
+	public.HandleFunc("/login", handlers.UH.Login).Methods("POST")
+
+	public.Use(middleware.Logging)
 
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
-	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), router)
+	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), public)
 }
