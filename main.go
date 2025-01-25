@@ -32,7 +32,7 @@ func main() {
 	// Create the store and Jobapplication handler
 
 	// Create public
-	global := mux.NewRouter().NewRoute()
+	global := mux.NewRouter()
 	auth := global.PathPrefix("/auth").Subrouter()
 	public := global.PathPrefix("/public").Subrouter()
 
@@ -67,5 +67,5 @@ func main() {
 
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
-	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), global)
 }
