@@ -20,7 +20,7 @@ func RequireAuth(next http.Handler) http.Handler {
 
 		if err != nil {
 			authLogger.Println("Could not extract auth cookie")
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Error(w, "Unuthorized",http.StatusUnauthorized)
 			return
 		}
 
@@ -39,7 +39,7 @@ func RequireAuth(next http.Handler) http.Handler {
 		})
 		if err != nil {
 			authLogger.Println(err)
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Error(w, "Unuthorized",http.StatusUnauthorized)
 			return
 		}
 
@@ -48,7 +48,7 @@ func RequireAuth(next http.Handler) http.Handler {
 			// Check if token is expired
 			if float64(time.Now().Unix()) > claims["exp"].(float64) {
 				authLogger.Println("Token expired")
-				w.WriteHeader(http.StatusUnauthorized)
+				http.Error(w, "Unuthorized",http.StatusUnauthorized)
 				return
 			}
 
@@ -56,18 +56,18 @@ func RequireAuth(next http.Handler) http.Handler {
 			user, err := initializers.Store.GetById(int(claims["sub"].(float64)))
 			if err != nil {
 				authLogger.Printf("No user with id %d", claims["sub"])
-				w.WriteHeader(http.StatusUnauthorized)
+				http.Error(w, "Unuthorized",http.StatusUnauthorized)
 				return
 			}
 			if user != nil {
 				next.ServeHTTP(w, r)
 			}
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Error(w, "Unuthorized",http.StatusUnauthorized)
 			return
 
 		} else {
 			authLogger.Printf("Could not map claims of token")
-			w.WriteHeader(http.StatusUnauthorized)
+			http.Error(w, "Unuthorized",http.StatusUnauthorized)
 			return
 		}
 	})
