@@ -6,7 +6,7 @@ import (
 
 var Store *stores.MariaDBStore
 
-
 func CreateDbStores() {
+	logger.Println("Creating store")
 	Store = stores.NewMariaDBStore(Db)
 }
