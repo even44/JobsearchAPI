@@ -67,5 +67,5 @@ func main() {
 
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
-	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), public)
+	http.ListenAndServe(fmt.Sprintf(":%d", initializers.ApiPort), nil)
 }
