@@ -22,6 +22,7 @@ func init() {
 	initializers.ParseEnvVariables()
 	initializers.ConnectToMariaDB()
 	initializers.SyncDatabase()
+	initializers.CreateDbStores()
 
 	handlers.UH = handlers.NewUserHandler(initializers.Store)
 	handlers.JAH = handlers.NewJobApplicationHandler(initializers.Store)
