@@ -37,6 +37,9 @@ func main() {
 	auth := global.PathPrefix("/auth").Subrouter()
 	public := global.PathPrefix("/public").Subrouter()
 
+	global.Use(middleware.Logging)
+	auth.Use(middleware.RequireAuth)
+
 	auth.HandleFunc("/jobapplications", handlers.JAH.ListJobApplications).Methods("GET")
 	auth.HandleFunc("/jobapplications", handlers.JAH.CreateJobApplication).Methods("POST")
 	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.GetJobApplication).Methods("GET")
@@ -63,10 +66,6 @@ func main() {
 
 	public.HandleFunc("/signup", handlers.UH.SignUp).Methods("POST")
 	public.HandleFunc("/login", handlers.UH.Login).Methods("POST")
-
-	global.Use(middleware.Logging)
-
-	auth.Use(middleware.RequireAuth)
 
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
