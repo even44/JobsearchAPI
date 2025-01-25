@@ -64,7 +64,9 @@ func main() {
 	public.HandleFunc("/signup", handlers.UH.SignUp).Methods("POST")
 	public.HandleFunc("/login", handlers.UH.Login).Methods("POST")
 
-	public.Use(middleware.Logging)
+	global.Use(middleware.Logging)
+
+	auth.Use(middleware.RequireAuth)
 
 	// Start server
 	logger.Printf("Jobsearch API running on port: %d\n", initializers.ApiPort)
