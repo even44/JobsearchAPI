@@ -21,7 +21,6 @@ func RequireAuth(next http.Handler) http.Handler {
 		if err != nil {
 			authLogger.Println("Could not extract auth cookie")
 			http.Error(w, "Unuthorized",http.StatusUnauthorized)
-			return
 		}
 
 		// Parse takes the token string and a function for looking up the key. The latter is especially
@@ -40,7 +39,6 @@ func RequireAuth(next http.Handler) http.Handler {
 		if err != nil {
 			authLogger.Println(err)
 			http.Error(w, "Unuthorized",http.StatusUnauthorized)
-			return
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
@@ -49,7 +47,6 @@ func RequireAuth(next http.Handler) http.Handler {
 			if float64(time.Now().Unix()) > claims["exp"].(float64) {
 				authLogger.Println("Token expired")
 				http.Error(w, "Unuthorized",http.StatusUnauthorized)
-				return
 			}
 
 			// Check if user with provided id exists
@@ -57,18 +54,15 @@ func RequireAuth(next http.Handler) http.Handler {
 			if err != nil {
 				authLogger.Printf("No user with id %d", claims["sub"])
 				http.Error(w, "Unuthorized",http.StatusUnauthorized)
-				return
 			}
 			if user != nil {
 				next.ServeHTTP(w, r)
 			}
 			http.Error(w, "Unuthorized",http.StatusUnauthorized)
-			return
 
 		} else {
 			authLogger.Printf("Could not map claims of token")
 			http.Error(w, "Unuthorized",http.StatusUnauthorized)
-			return
 		}
 	})
 }
