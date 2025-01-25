@@ -16,10 +16,10 @@ var authLogger *log.Logger = log.New(os.Stdout, "[AUTH] ", log.Ldate+log.Ltime+l
 func RequireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get cookie
-		tokenString, err := r.Cookie("Authorization")
+		authCookie, err := r.Cookie("Authorization")
 
 		if err != nil {
-			authLogger.Println("Could not extract auth cookie")
+			authLogger.Printf("Could not extract auth cookie \n%s", err)
 			http.Error(w, "Unuthorized",http.StatusUnauthorized)
 			return
 		}
@@ -28,7 +28,7 @@ func RequireAuth(next http.Handler) http.Handler {
 		// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
 		// head of the token to identify which key to use, but the parsed token (head and claims) is provided
 		// to the callback, providing flexibility.
-		token, err := jwt.Parse(tokenString.Value, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(authCookie.Value, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
