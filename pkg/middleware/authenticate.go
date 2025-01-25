@@ -62,8 +62,7 @@ func RequireAuth(next http.Handler) http.Handler {
 			if user != nil {
 				next.ServeHTTP(w, r)
 			}
-			http.Error(w, "Unuthorized",http.StatusUnauthorized)
-			return
+			
 
 		} else {
 			authLogger.Printf("Could not map claims of token")

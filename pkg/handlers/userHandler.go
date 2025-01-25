@@ -97,6 +97,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    tokenString,
 		MaxAge:   3600 * 24 * 30,
 		HttpOnly: true,
+		Path:     "/auth",
 	})
 	if err != nil {
 		InternalServerErrorHandler(w, r)
