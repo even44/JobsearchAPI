@@ -47,7 +47,7 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 
 	resultContact, err := h.store.AddContact(contact)
 	if err != nil {
-		h.logger.Fatal(err.Error())
+		h.logger.Println(err.Error())
 		InternalServerErrorHandler(w, r)
 		return
 	}
