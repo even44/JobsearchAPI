@@ -1,10 +1,23 @@
 package stores
 
 import (
+	"fmt"
+
 	"github.com/even44/JobsearchAPI/pkg/models"
 )
 
 func (s MariaDBStore) AddApplication(application models.JobApplication) (*models.JobApplication, error) {
+
+	company, err := s.GetCompany(application.CompanyID)
+	if err != nil {
+		s.logger.Printf("[WARN][ADD] Company does not exist")
+		return nil, err
+	}
+
+	if company.UserID != application.UserID {
+		s.logger.Printf("[WARN][ADD] Company exists but does not belong to this user, aborting...")
+		return nil, fmt.Errorf("invalid company id")
+	}
 
 	s.logger.Println("[ADD] Creating Application")
 	result := s.db.Omit("Company").Create(&application)
