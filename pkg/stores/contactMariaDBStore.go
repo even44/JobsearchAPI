@@ -2,6 +2,7 @@ package stores
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/even44/JobsearchAPI/pkg/models"
 	"gorm.io/gorm"
@@ -9,12 +10,18 @@ import (
 
 func (s MariaDBStore) AddContact(contact models.Contact) (*models.Contact, error) {
 
-	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name, UserID: contact.UserID}).Error
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.Printf("[WARN][ADD] Contact with name %s already exists and will not be created", contact.Name)
+	company, err := s.GetCompany(contact.CompanyID)
+	if err != nil {
+		s.logger.Printf("[WARN][ADD] Company does not exist")
 		return nil, err
 	}
-	s.logger.Printf("[ADD] Contact with name %s does not exist and will be created", contact.Name)
+
+	if company.UserID != contact.UserID {
+		s.logger.Printf("[WARN][ADD] Company exists but does not belong to this user, aborting...")
+		return nil, fmt.Errorf("invalid company id")
+	}
+
+	s.logger.Printf("[ADD] Contact with name %s will be created", contact.Name)
 	result := s.db.Create(&contact)
 	if result.Error != nil {
 		return nil, result.Error
