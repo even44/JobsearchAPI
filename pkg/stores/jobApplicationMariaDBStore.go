@@ -14,13 +14,23 @@ func (s MariaDBStore) AddApplication(application models.JobApplication) (*models
 		return nil, err
 	}
 
+	contact, err := s.GetContact(application.ContactID)
+	if err != nil {
+		s.logger.Printf("[WARN][ADD] Contact does not exist")
+	}
+
 	if company.UserID != application.UserID {
 		s.logger.Printf("[WARN][ADD] Company exists but does not belong to this user, aborting...")
 		return nil, fmt.Errorf("invalid company id")
 	}
 
+	if contact.UserID != application.UserID {
+		s.logger.Printf("[WARN][ADD] Contact exists but does not belong to this user, aborting...")
+		return nil, fmt.Errorf("invalid contact id")
+	}
+
 	s.logger.Println("[ADD] Creating Application")
-	result := s.db.Omit("Company").Create(&application)
+	result := s.db.Omit("Company", "Contact").Create(&application)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -65,12 +75,23 @@ func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplicati
 	if err != nil {
 		return err
 	}
+
+	contact, err := s.GetContact(application.ContactID)
+	if err != nil {
+		s.logger.Printf("[WARN][UPDATE] Contact does not exist")
+	}
+
 	if company.UserID != application.UserID {
-		s.logger.Printf("[WARN][ADD] Company exists but does not belong to this user, aborting...")
+		s.logger.Printf("[WARN][UPDATE] Company exists but does not belong to this user, aborting...")
 		return fmt.Errorf("invalid company id")
 	}
 
-	result := s.db.Omit("Company").Save(&application)
+	if contact.UserID != application.UserID {
+		s.logger.Printf("[WARN][UPDATE] Contact exists but does not belong to this user, aborting...")
+		return fmt.Errorf("invalid contact id")
+	}
+
+	result := s.db.Omit("Company", "Contact").Save(&application)
 	if result.Error != nil {
 		return result.Error
 	}

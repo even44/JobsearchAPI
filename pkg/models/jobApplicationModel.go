@@ -18,4 +18,6 @@ type JobApplication struct {
 	Interview  bool      `json:"interview"`
 	Done       bool      `json:"done"`
 	Link       string    `json:"link"`
+	ContactID  uint      `json:"contact_id"`
+	Contact    Contact   `json:"contact"`
 }
