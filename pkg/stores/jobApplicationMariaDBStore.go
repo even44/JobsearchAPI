@@ -24,7 +24,7 @@ func (s MariaDBStore) AddApplication(application models.JobApplication) (*models
 }
 func (s MariaDBStore) GetApplication(Id uint) (*models.JobApplication, error) {
 	var application models.JobApplication
-	result := s.db.First(&application, Id)
+	result := s.db.Preload("Company.Contacts").Preload("Company").First(&application, Id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

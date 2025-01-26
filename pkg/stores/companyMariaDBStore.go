@@ -30,7 +30,7 @@ func (s MariaDBStore) AddCompany(company models.Company) (*models.Company, error
 }
 func (s MariaDBStore) GetCompany(Id uint) (*models.Company, error) {
 	var company models.Company
-	result := s.db.First(&company, Id)
+	result := s.db.Preload("Contacts").First(&company, Id)
 	if result.Error != nil {
 		s.logger.Printf("[ERROR][GET] Could not find company with id %d", Id)
 		return nil, result.Error
@@ -40,7 +40,7 @@ func (s MariaDBStore) GetCompany(Id uint) (*models.Company, error) {
 }
 func (s MariaDBStore) ListCompanies(userID uint) ([]models.Company, error) {
 	var companies []models.Company
-	s.db.Find(&companies, &models.Company{UserID: userID})
+	s.db.Preload("Contacts").Find(&companies, &models.Company{UserID: userID})
 	s.logger.Printf("[LIST] Got %d companies", len(companies))
 	return companies, nil
 }
