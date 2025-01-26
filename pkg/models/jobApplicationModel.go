@@ -8,9 +8,9 @@ import (
 
 type JobApplication struct {
 	gorm.Model
-	UserID     uint
+	UserID     uint      `json:"user_id" gorm:"index:idx_application"`
+	CompanyID  uint      `json:"company_id" gorm:"index:idx_application"`
 	Position   string    `json:"position"`
-	CompanyID  uint      `json:"company_id"`
 	Company    Company   `json:"company"`
 	SearchDate time.Time `json:"search_date"`
 	Deadline   time.Time `json:"deadline"`

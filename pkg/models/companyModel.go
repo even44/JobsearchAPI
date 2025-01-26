@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Company struct {
 	gorm.Model
-	UserID   uint
+	UserID   uint      `json:"user_id"`
 	Name     string    `json:"name"`
 	Location string    `json:"location"`
 	Status   string    `json:"status"`
