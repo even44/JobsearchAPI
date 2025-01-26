@@ -29,6 +29,11 @@ func (s MariaDBStore) AddApplication(application models.JobApplication) (*models
 		return nil, fmt.Errorf("invalid contact id")
 	}
 
+	if contact.CompanyID != application.CompanyID {
+		s.logger.Printf("[WARN][ADD] Contact exists but does not belong to this company, aborting...")
+		return nil, fmt.Errorf("invalid contact id")
+	}
+
 	s.logger.Println("[ADD] Creating Application")
 	result := s.db.Omit("Company", "Contact").Create(&application)
 	if result.Error != nil {
@@ -88,6 +93,11 @@ func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplicati
 
 	if contact.UserID != application.UserID {
 		s.logger.Printf("[WARN][UPDATE] Contact exists but does not belong to this user, aborting...")
+		return fmt.Errorf("invalid contact id")
+	}
+
+	if contact.CompanyID != application.CompanyID {
+		s.logger.Printf("[WARN][UPDATE] Contact exists but does not belong to this company, aborting...")
 		return fmt.Errorf("invalid contact id")
 	}
 
