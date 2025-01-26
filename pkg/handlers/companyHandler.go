@@ -97,8 +97,8 @@ func (h CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-
-	company, err := h.store.GetCompany(id)
+	
+	company, err := h.store.GetCompany(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -134,7 +134,7 @@ func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldCompany, err := h.store.GetCompany(id)
+	oldCompany, err := h.store.GetCompany(uint(id))
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -153,9 +153,9 @@ func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newCompany.Id = oldCompany.Id
+	newCompany.ID = oldCompany.ID
 
-	err = h.store.UpdateCompany(id, newCompany)
+	err = h.store.UpdateCompany(uint(id), newCompany)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while updating jobApplication with id %d: \n%s", id, err.Error()))
@@ -183,7 +183,7 @@ func (h CompanyHandler) DeleteCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.store.RemoveCompany(id)
+	err = h.store.RemoveCompany(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company with id %d: \n%s", id, err.Error()))

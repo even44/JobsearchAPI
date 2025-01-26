@@ -21,20 +21,20 @@ func (s MariaDBStore) AddContact(contact models.Contact) (*models.Contact, error
 		return nil, result.Error
 	}
 
-	resConstact, err := s.GetContact(contact.Id)
+	resConstact, err := s.GetContact(contact.ID)
 	if err != nil {
 		return nil, result.Error
 	}
 	s.logger.Printf("[ADD] Created contact with name %s", contact.Name)
 	return resConstact, nil
 }
-func (s MariaDBStore) GetContact(id int) (*models.Contact, error) {
+func (s MariaDBStore) GetContact(id uint) (*models.Contact, error) {
 	var contact models.Contact
 	result := s.db.First(&contact, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	s.logger.Printf("[GET] Got contact with Name '%s' and id %d ", contact.Name, contact.Id)
+	s.logger.Printf("[GET] Got contact with Name '%s' and id %d ", contact.Name, contact.ID)
 	return &contact, nil
 }
 func (s MariaDBStore) ListContacts() ([]models.Contact, error) {
@@ -43,13 +43,15 @@ func (s MariaDBStore) ListContacts() ([]models.Contact, error) {
 	s.logger.Printf("[LIST] Got %d companies", len(contacts))
 	return contacts, nil
 }
-func (s MariaDBStore) UpdateContact(id int, contact models.Contact) error {
+func (s MariaDBStore) UpdateContact(id uint, contact models.Contact) error {
 
 	var existingContact *models.Contact
 	err := s.db.First(&existingContact, models.Contact{Name: contact.Name}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		if existingContact.Id != id {
-			s.logger.Printf("[WARN][UPDATE] A different contact with name %s already exists and will not be updated", contact.Name)
+		if existingContact.ID != id {
+			s.logger.Printf(
+				"[WARN][UPDATE] A different contact with name %s already exists and will not be updated",
+				contact.Name)
 			return err
 		}
 	}
@@ -63,10 +65,12 @@ func (s MariaDBStore) UpdateContact(id int, contact models.Contact) error {
 		s.logger.Printf("[ERROR] %s", result.Error)
 		return result.Error
 	}
-	s.logger.Printf("[UPDATE] Updated contact with name '%s' and company_id '%d' with id %d ", contact.Name, contact.CompanyId, contact.Id)
+	s.logger.Printf(
+		"[UPDATE] Updated contact with name '%s' and company_id '%d' with id %d ",
+		contact.Name, contact.CompanyId, contact.ID)
 	return nil
 }
-func (s MariaDBStore) RemoveContact(id int) error {
+func (s MariaDBStore) RemoveContact(id uint) error {
 	contact, err := s.GetContact(id)
 	if err != nil {
 		return err
@@ -75,6 +79,8 @@ func (s MariaDBStore) RemoveContact(id int) error {
 	if result.Error != nil {
 		return result.Error
 	}
-	s.logger.Printf("[DELETE] Deleted contact with name '%s' and company_id '%d' with id %d ", contact.Name, contact.CompanyId, contact.Id)
+	s.logger.Printf(
+		"[DELETE] Deleted contact with name '%s' and company_id '%d' with id %d ",
+		contact.Name, contact.CompanyId, contact.ID)
 	return nil
 }

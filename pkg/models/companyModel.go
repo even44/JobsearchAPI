@@ -1,7 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type Company struct {
-	Id       int       `json:"id" gorm:"unique;primaryKey;autoIncrement"`
+	gorm.Model
 	Name     string    `json:"name" gorm:"index:idx_name,unique"`
 	Location string    `json:"location" gorm:"index:idx_name,unique"`
 	Status   string    `json:"status"`

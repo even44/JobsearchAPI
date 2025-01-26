@@ -1,7 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type JobApplication struct {
-	Id         int     `json:"id" gorm:"unique;primaryKey;autoIncrement"`
+	gorm.Model
 	Position   string  `json:"position"`
 	CompanyId  int     `json:"company_id"`
 	Company    Company `json:"company"`

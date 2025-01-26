@@ -98,7 +98,7 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 		return
 	}
 
-	jobApplication, err := h.store.GetApplication(id)
+	jobApplication, err := h.store.GetApplication(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -134,7 +134,7 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldJobApplication, err := h.store.GetApplication(id)
+	oldJobApplication, err := h.store.GetApplication(uint(id))
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -153,13 +153,13 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 		return
 	}
 
-	newJobApplication.Id = oldJobApplication.Id
+	newJobApplication.ID = oldJobApplication.ID
 	if newJobApplication.CompanyId == 0 {
 		h.logger.Printf("[UPDATE] Updated job application had companyid = 0, using old company id: %d", oldJobApplication.CompanyId)
 		newJobApplication.CompanyId = oldJobApplication.CompanyId
 	}
 
-	err = h.store.UpdateApplication(id, newJobApplication)
+	err = h.store.UpdateApplication(uint(id), newJobApplication)
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
@@ -187,7 +187,7 @@ func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *h
 		return
 	}
 
-	err = h.store.RemoveApplication(id)
+	err = h.store.RemoveApplication(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))

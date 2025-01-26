@@ -22,21 +22,21 @@ func (s MariaDBStore) AddCompany(company models.Company) (*models.Company, error
 		return &company, result.Error
 	}
 
-	resCompany, err := s.GetCompany(company.Id)
+	resCompany, err := s.GetCompany(company.ID)
 	if err != nil {
 		return nil, result.Error
 	}
 	s.logger.Printf("[ADD] Created company with Name '%s' and location %s ", company.Name, company.Location)
 	return resCompany, nil
 }
-func (s MariaDBStore) GetCompany(Id int) (*models.Company, error) {
+func (s MariaDBStore) GetCompany(Id uint) (*models.Company, error) {
 	var company models.Company
 	result := s.db.Preload("Contacts").First(&company, Id)
 	if result.Error != nil {
 		s.logger.Printf("[ERROR][GET] Could not find company with id %d", Id)
 		return nil, result.Error
 	}
-	s.logger.Printf("[GET] Got company with Name '%s' and id %d ", company.Name, company.Id)
+	s.logger.Printf("[GET] Got company with Name '%s' and id %d ", company.Name, company.ID)
 	return &company, nil
 }
 func (s MariaDBStore) ListCompanies() ([]models.Company, error) {
@@ -45,11 +45,11 @@ func (s MariaDBStore) ListCompanies() ([]models.Company, error) {
 	s.logger.Printf("[LIST] Got %d companies", len(companies))
 	return companies, nil
 }
-func (s MariaDBStore) UpdateCompany(Id int, company models.Company) error {
+func (s MariaDBStore) UpdateCompany(Id uint, company models.Company) error {
 	var existingCompany *models.Company
 	err := s.db.First(&existingCompany, models.Company{Name: company.Name, Location: company.Location}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		if existingCompany.Id != Id {
+		if existingCompany.ID != Id {
 			s.logger.Printf("[WARN][UPDATE] Company with name %s and location %s already exists and will not be updated", company.Name, company.Location)
 			return err
 		}
@@ -60,10 +60,10 @@ func (s MariaDBStore) UpdateCompany(Id int, company models.Company) error {
 		s.logger.Printf("[ERROR] %s", result.Error)
 		return result.Error
 	}
-	s.logger.Printf("[UPDATE] Updated company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.Id)
+	s.logger.Printf("[UPDATE] Updated company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.ID)
 	return nil
 }
-func (s MariaDBStore) RemoveCompany(id int) error {
+func (s MariaDBStore) RemoveCompany(id uint) error {
 	company, err := s.GetCompany(id)
 	if err != nil {
 		return err
@@ -72,6 +72,6 @@ func (s MariaDBStore) RemoveCompany(id int) error {
 	if result.Error != nil {
 		return result.Error
 	}
-	s.logger.Printf("[DELETE] Deleted company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.Id)
+	s.logger.Printf("[DELETE] Deleted company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.ID)
 	return nil
 }

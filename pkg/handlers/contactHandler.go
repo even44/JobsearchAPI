@@ -98,7 +98,7 @@ func (h ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contact, err := h.store.GetContact(id)
+	contact, err := h.store.GetContact(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
@@ -134,7 +134,7 @@ func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	oldContact, err := h.store.GetContact(id)
+	oldContact, err := h.store.GetContact(uint(id))
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
 		if err.Error() == "not found" {
@@ -153,13 +153,14 @@ func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Printf("%d => %d", newContact.Id, oldContact.Id)
-	newContact.Id = oldContact.Id
+	h.logger.Printf("%d => %d", newContact.ID, oldContact.ID)
+	newContact.ID = oldContact.ID
 
-	err = h.store.UpdateContact(id, newContact)
+	err = h.store.UpdateContact(uint(id), newContact)
 
 	if err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err))
+		h.logger.Printf(
+			"[ERROR] Received following error while getting contact with id %d: \n%s", id, err)
 		if err.Error() == "not found" {
 			NotFoundHandler(w, r)
 			return
@@ -184,7 +185,7 @@ func (h ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.store.RemoveContact(id)
+	err = h.store.RemoveContact(uint(id))
 
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
