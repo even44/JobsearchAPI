@@ -56,8 +56,8 @@ func (s MariaDBStore) UpdateContact(id uint, contact models.Contact) error {
 		}
 	}
 
-	if contact.CompanyId == 0 {
-		contact.CompanyId = existingContact.CompanyId
+	if contact.CompanyID == 0 {
+		contact.CompanyID = existingContact.CompanyID
 	}
 
 	result := s.db.Save(&contact)
@@ -67,7 +67,7 @@ func (s MariaDBStore) UpdateContact(id uint, contact models.Contact) error {
 	}
 	s.logger.Printf(
 		"[UPDATE] Updated contact with name '%s' and company_id '%d' with id %d ",
-		contact.Name, contact.CompanyId, contact.ID)
+		contact.Name, contact.CompanyID, contact.ID)
 	return nil
 }
 func (s MariaDBStore) RemoveContact(id uint) error {
@@ -81,6 +81,6 @@ func (s MariaDBStore) RemoveContact(id uint) error {
 	}
 	s.logger.Printf(
 		"[DELETE] Deleted contact with name '%s' and company_id '%d' with id %d ",
-		contact.Name, contact.CompanyId, contact.ID)
+		contact.Name, contact.CompanyID, contact.ID)
 	return nil
 }

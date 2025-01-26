@@ -154,9 +154,11 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	}
 
 	newJobApplication.ID = oldJobApplication.ID
-	if newJobApplication.CompanyId == 0 {
-		h.logger.Printf("[UPDATE] Updated job application had companyid = 0, using old company id: %d", oldJobApplication.CompanyId)
-		newJobApplication.CompanyId = oldJobApplication.CompanyId
+	if newJobApplication.CompanyID == 0 {
+		h.logger.Printf(
+			"[UPDATE] Updated job application had companyid = 0, using old company id: %d",
+			oldJobApplication.CompanyID)
+		newJobApplication.CompanyID = oldJobApplication.CompanyID
 	}
 
 	err = h.store.UpdateApplication(uint(id), newJobApplication)
