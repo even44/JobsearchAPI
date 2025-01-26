@@ -51,6 +51,25 @@ func (s MariaDBStore) ListApplications(userID uint) ([]models.JobApplication, er
 	return applications, nil
 }
 func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplication) error {
+
+	existingApplication, err := s.GetApplication(id)
+	if err != nil {
+		return err
+	}
+
+	if application.CompanyID == 0 {
+		application.CompanyID = existingApplication.CompanyID
+	}
+
+	company, err := s.GetCompany(application.CompanyID)
+	if err != nil {
+		return err
+	}
+	if company.UserID != application.UserID {
+		s.logger.Printf("[WARN][ADD] Company exists but does not belong to this user, aborting...")
+		return fmt.Errorf("invalid company id")
+	}
+
 	result := s.db.Omit("Company").Save(&application)
 	if result.Error != nil {
 		return result.Error
