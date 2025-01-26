@@ -76,6 +76,10 @@ func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplicati
 		application.CompanyID = existingApplication.CompanyID
 	}
 
+	if application.UserID == 0 {
+		application.UserID = existingApplication.UserID
+	}
+
 	company, err := s.GetCompany(application.CompanyID)
 	if err != nil {
 		s.logger.Printf("[WARN][UPDATE] Could not get company")
