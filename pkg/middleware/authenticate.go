@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/even44/JobsearchAPI/pkg/initializers"
+	"github.com/even44/JobsearchAPI/pkg/models"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -39,7 +41,7 @@ func RequireAuth(next http.Handler) http.Handler {
 		})
 		if err != nil {
 			authLogger.Println(err)
-			http.Error(w, "Unauthorized",http.StatusUnauthorized)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -48,7 +50,7 @@ func RequireAuth(next http.Handler) http.Handler {
 			// Check if token is expired
 			if float64(time.Now().Unix()) > claims["exp"].(float64) {
 				authLogger.Println("Token expired")
-				http.Error(w, "Unauthorized",http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -56,17 +58,18 @@ func RequireAuth(next http.Handler) http.Handler {
 			user, err := initializers.Store.GetUserById(int(claims["sub"].(float64)))
 			if err != nil {
 				authLogger.Printf("No user with id %d", claims["sub"])
-				http.Error(w, "Unauthorized",http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 			if user != nil {
+				c := context.WithValue(r.Context(), models.User{}, user)
+				r = r.WithContext(c)
 				next.ServeHTTP(w, r)
 			}
-			
 
 		} else {
 			authLogger.Printf("Could not map claims of token")
-			http.Error(w, "Unauthorized",http.StatusUnauthorized)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 	})

@@ -33,6 +33,7 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 	}
 	enableCors(&w)
 
+
 	var jobApplication models.JobApplication
 	h.logger.Printf("Received request to create job application from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
@@ -62,6 +63,10 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 		return
 	}
 	enableCors(&w)
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+
+	logger.Printf("User id: %d", user.ID)
 
 	h.logger.Printf("Received request to list job applications from: %s", r.Host)
 	jobapplications, err := h.store.ListApplications()
