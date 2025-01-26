@@ -9,7 +9,7 @@ import (
 
 func (s MariaDBStore) AddContact(contact models.Contact) (*models.Contact, error) {
 
-	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name}).Error
+	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name, UserID: contact.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.Printf("[WARN][ADD] Contact with name %s already exists and will not be created", contact.Name)
 		s.db.First(&contact, &models.Contact{Name: contact.Name})
@@ -37,16 +37,16 @@ func (s MariaDBStore) GetContact(id uint) (*models.Contact, error) {
 	s.logger.Printf("[GET] Got contact with Name '%s' and id %d ", contact.Name, contact.ID)
 	return &contact, nil
 }
-func (s MariaDBStore) ListContacts() ([]models.Contact, error) {
+func (s MariaDBStore) ListContacts(userID uint) ([]models.Contact, error) {
 	var contacts []models.Contact
-	s.db.Find(&contacts)
+	s.db.Find(&contacts, &models.Contact{UserID: userID})
 	s.logger.Printf("[LIST] Got %d companies", len(contacts))
 	return contacts, nil
 }
 func (s MariaDBStore) UpdateContact(id uint, contact models.Contact) error {
 
 	var existingContact *models.Contact
-	err := s.db.First(&existingContact, models.Contact{Name: contact.Name}).Error
+	err := s.db.First(&existingContact, models.Contact{Name: contact.Name, UserID: contact.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		if existingContact.ID != id {
 			s.logger.Printf(

@@ -33,7 +33,11 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 	}
 	enableCors(&w)
 
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
 	var contact models.Contact
+	contact.UserID = user.ID
 	h.logger.Printf("Received request to create contact from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
@@ -63,8 +67,11 @@ func (h ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	}
 	enableCors(&w)
 
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
 	h.logger.Printf("Received request to list contacts from: %s", r.Host)
-	contacts, err := h.store.ListContacts()
+	contacts, err := h.store.ListContacts(user.ID)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting contact list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -110,6 +117,14 @@ func (h ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	if contact.UserID != user.ID {
+		BadRequestHandler(w, r)
+		return
+	}
+
 	jsonBytes, err := json.Marshal(contact)
 
 	if err != nil {
@@ -142,6 +157,14 @@ func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	if oldContact.UserID != user.ID {
+		BadRequestHandler(w, r)
 		return
 	}
 
@@ -184,6 +207,26 @@ func (h ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	contact, err := h.store.GetContact(uint(id))
+	if err != nil {
+		print(fmt.Sprintf("[ERROR] Received following error while getting contact with id %d: \n%s", id, err.Error()))
+		if err.Error() == "not found" {
+			NotFoundHandler(w, r)
+			return
+		}
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	if contact.UserID != user.ID {
+		BadRequestHandler(w, r)
+		return
+	}
+
 
 	err = h.store.RemoveContact(uint(id))
 

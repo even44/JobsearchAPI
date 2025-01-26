@@ -9,7 +9,7 @@ import (
 
 func (s MariaDBStore) AddCompany(company models.Company) (*models.Company, error) {
 
-	err := s.db.First(&models.Company{}, models.Company{Name: company.Name, Location: company.Location}).Error
+	err := s.db.First(&models.Company{}, models.Company{Name: company.Name, Location: company.Location, UserID: company.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.Printf("[WARN][ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
 		s.db.First(&company, &models.Company{Name: company.Name, Location: company.Location})
@@ -39,15 +39,15 @@ func (s MariaDBStore) GetCompany(Id uint) (*models.Company, error) {
 	s.logger.Printf("[GET] Got company with Name '%s' and id %d ", company.Name, company.ID)
 	return &company, nil
 }
-func (s MariaDBStore) ListCompanies() ([]models.Company, error) {
+func (s MariaDBStore) ListCompanies(userID uint) ([]models.Company, error) {
 	var companies []models.Company
-	s.db.Preload("Contacts").Find(&companies)
+	s.db.Preload("Contacts").Find(&companies, &models.Company{UserID: userID})
 	s.logger.Printf("[LIST] Got %d companies", len(companies))
 	return companies, nil
 }
 func (s MariaDBStore) UpdateCompany(Id uint, company models.Company) error {
 	var existingCompany *models.Company
-	err := s.db.First(&existingCompany, models.Company{Name: company.Name, Location: company.Location}).Error
+	err := s.db.First(&existingCompany, models.Company{Name: company.Name, Location: company.Location, UserID: company.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		if existingCompany.ID != Id {
 			s.logger.Printf("[WARN][UPDATE] Company with name %s and location %s already exists and will not be updated", company.Name, company.Location)

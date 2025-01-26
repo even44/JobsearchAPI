@@ -33,7 +33,11 @@ func (h CompanyHandler) CreateCompany(w http.ResponseWriter, r *http.Request) {
 	}
 	enableCors(&w)
 
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
 	var company models.Company
+	company.UserID = user.ID
 	h.logger.Printf("Received request to create company from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
@@ -63,8 +67,11 @@ func (h CompanyHandler) ListCompanies(w http.ResponseWriter, r *http.Request) {
 	}
 	enableCors(&w)
 
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
 	h.logger.Printf("Received request to list companies from: %s", r.Host)
-	companies, err := h.store.ListCompanies()
+	companies, err := h.store.ListCompanies(user.ID)
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company list: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
@@ -97,7 +104,7 @@ func (h CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	
+
 	company, err := h.store.GetCompany(uint(id))
 
 	if err != nil {
@@ -107,6 +114,14 @@ func (h CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	if company.UserID != user.ID {
+		BadRequestHandler(w, r)
 		return
 	}
 
@@ -134,6 +149,7 @@ func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
+
 	oldCompany, err := h.store.GetCompany(uint(id))
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while getting company with id %d: \n%s", id, err.Error()))
@@ -142,6 +158,14 @@ func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	if oldCompany.UserID != user.ID {
+		BadRequestHandler(w, r)
 		return
 	}
 
@@ -180,6 +204,26 @@ func (h CompanyHandler) DeleteCompany(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while converting id to int \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	company, err := h.store.GetCompany(uint(id))
+
+	if err != nil {
+		print(fmt.Sprintf("[ERROR] Received following error while getting jobApplication with id %d: \n%s", id, err.Error()))
+		if err.Error() == "not found" {
+			NotFoundHandler(w, r)
+			return
+		}
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	var user *models.User = r.Context().Value(models.User{}).(*models.User)
+	h.logger.Printf("User id: %d", user.ID)
+
+	if company.UserID != user.ID {
+		BadRequestHandler(w, r)
 		return
 	}
 
