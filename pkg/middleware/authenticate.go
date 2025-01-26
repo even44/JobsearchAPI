@@ -53,7 +53,7 @@ func RequireAuth(next http.Handler) http.Handler {
 			}
 
 			// Check if user with provided id exists
-			user, err := initializers.Store.GetById(int(claims["sub"].(float64)))
+			user, err := initializers.Store.GetUserById(int(claims["sub"].(float64)))
 			if err != nil {
 				authLogger.Printf("No user with id %d", claims["sub"])
 				http.Error(w, "Unauthorized",http.StatusUnauthorized)

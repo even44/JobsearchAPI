@@ -49,7 +49,7 @@ func (h UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	// Create user
 	user := models.User{Email: body.Email, Password: string(hash)}
-	err = h.store.Add(&user)
+	err = h.store.AddUser(&user)
 	if err != nil {
 		InternalServerErrorHandler(w, r)
 		h.logger.Printf("[ERROR] Could not create user \n%s", err)
@@ -71,7 +71,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Look up user based on email
-	user, err := h.store.GetByEmail(body.Email)
+	user, err := h.store.GetUserByEmail(body.Email)
 	if err != nil {
 		InvalidEmailOrPasswordHandler(w, r)
 		return

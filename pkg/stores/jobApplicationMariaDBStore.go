@@ -1,29 +1,12 @@
 package stores
 
 import (
-	"errors"
-
 	"github.com/even44/JobsearchAPI/pkg/models"
-	"gorm.io/gorm"
 )
 
-func (s MariaDBStore) AddApplication(id int, application models.JobApplication) (*models.JobApplication, error) {
-
-	s.logger.Println("[ADD] Adding Company")
-	company, err := s.AddCompany(0, application.Company)
-	if err != nil {
-		return nil, err
-	}
-
-	s.logger.Println("[ADD] Adding Contacts")
-	for _, contact := range application.Company.Contacts {
-		s.AddContact(company.Id, contact)
-	}
-	s.logger.Println("[ADD] Done Adding Contacts")
+func (s MariaDBStore) AddApplication(application models.JobApplication) (*models.JobApplication, error) {
 
 	s.logger.Println("[ADD] Creating Application")
-	s.logger.Printf("[ADD] Application id %d => %d", application.CompanyId, company.Id)
-	application.CompanyId = company.Id
 	result := s.db.Omit("Company").Create(&application)
 	if result.Error != nil {
 		return nil, result.Error
@@ -35,7 +18,7 @@ func (s MariaDBStore) AddApplication(id int, application models.JobApplication) 
 		return nil, err
 	}
 
-	s.logger.Printf("[ADD] Created job application with position '%s' and company '%s' with id %d ", resApplication.Position, resApplication.Company.Name, resApplication.Id)
+	s.logger.Printf("[ADD] Created job application with position '%s' at '%s' with id %d ", resApplication.Position, resApplication.Company.Name, resApplication.Id)
 	return resApplication, nil
 
 }
@@ -72,146 +55,5 @@ func (s MariaDBStore) RemoveApplication(id int) error {
 		return result.Error
 	}
 	s.logger.Printf("[DELETE] Deleted job application with position '%s' and company '%s' with id %d ", application.Position, application.Company.Name, application.Id)
-	return nil
-}
-
-func (s MariaDBStore) AddCompany(id int, company models.Company) (*models.Company, error) {
-
-	err := s.db.First(&models.Company{}, models.Company{Name: company.Name, Location: company.Location}).Error
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.Printf("[WARN][ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
-		s.db.First(&company, &models.Company{Name: company.Name, Location: company.Location})
-		return &company, err
-	}
-
-	s.logger.Printf("[ADD] Company with name %s and location %s does not exist and will be created", company.Name, company.Location)
-	result := s.db.Omit("Contacts").Create(&company)
-	if result.Error != nil {
-		return &company, result.Error
-	}
-
-	resCompany, err := s.GetCompany(company.Id)
-	if err != nil {
-		return nil, result.Error
-	}
-	s.logger.Printf("[ADD] Created company with Name '%s' and id %d ", company.Name, company.Id)
-	return resCompany, nil
-}
-func (s MariaDBStore) GetCompany(Id int) (*models.Company, error) {
-	var company models.Company
-	result := s.db.Preload("Contacts").First(&company, Id)
-	if result.Error != nil {
-		s.logger.Printf("[ERROR][GET] Could not find company with id %d", Id)
-		return nil, result.Error
-	}
-	s.logger.Printf("[GET] Got company with Name '%s' and id %d ", company.Name, company.Id)
-	return &company, nil
-}
-func (s MariaDBStore) ListCompanies() ([]models.Company, error) {
-	var companies []models.Company
-	s.db.Preload("Contacts").Find(&companies)
-	s.logger.Printf("[LIST] Got %d companies", len(companies))
-	return companies, nil
-}
-func (s MariaDBStore) UpdateCompany(Id int, company models.Company) error {
-	var existingCompany *models.Company
-	err := s.db.First(&existingCompany, models.Company{Name: company.Name, Location: company.Location}).Error
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		if existingCompany.Id != Id {
-			s.logger.Printf("[WARN][UPDATE] Company with name %s and location %s already exists and will not be updated", company.Name, company.Location)
-			return err
-		}
-	}
-
-	result := s.db.Save(&company)
-	if result.Error != nil {
-		s.logger.Printf("[ERROR] %s", result.Error)
-		return result.Error
-	}
-	s.logger.Printf("[UPDATE] Updated company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.Id)
-	return nil
-}
-func (s MariaDBStore) RemoveCompany(id int) error {
-	company, err := s.GetCompany(id)
-	if err != nil {
-		return err
-	}
-	result := s.db.Delete(company)
-	if result.Error != nil {
-		return result.Error
-	}
-	s.logger.Printf("[DELETE] Deleted company with name '%s' and location '%s' with id %d ", company.Name, company.Location, company.Id)
-	return nil
-}
-
-func (s MariaDBStore) AddContact(company_id int, contact models.Contact) (*models.Contact, error) {
-
-	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name}).Error
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.Printf("[WARN][ADD] Contact with name %s already exists and will not be created", contact.Name)
-		s.db.First(&contact, &models.Contact{Name: contact.Name})
-		return &contact, err
-	}
-	contact.CompanyId = company_id
-	result := s.db.Create(&contact)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	resConstact, err := s.GetContact(contact.Id)
-	if err != nil {
-		return nil, result.Error
-	}
-	s.logger.Printf("[ADD] Created contact with name %s", contact.Name)
-	return resConstact, nil
-}
-func (s MariaDBStore) GetContact(id int) (*models.Contact, error) {
-	var contact models.Contact
-	result := s.db.First(&contact, id)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	s.logger.Printf("[GET] Got contact with Name '%s' and id %d ", contact.Name, contact.Id)
-	return &contact, nil
-}
-func (s MariaDBStore) ListContacts() ([]models.Contact, error) {
-	var contacts []models.Contact
-	s.db.Find(&contacts)
-	s.logger.Printf("[LIST] Got %d companies", len(contacts))
-	return contacts, nil
-}
-func (s MariaDBStore) UpdateContact(id int, contact models.Contact) error {
-
-	var existingContact *models.Contact
-	err := s.db.First(&existingContact, models.Contact{Name: contact.Name}).Error
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		if existingContact.Id != id {
-			s.logger.Printf("[WARN][UPDATE] A different contact with name %s already exists and will not be updated", contact.Name)
-			return err
-		}
-	}
-
-	if contact.CompanyId == 0 {
-		contact.CompanyId = existingContact.CompanyId
-	}
-
-	result := s.db.Save(&contact)
-	if result.Error != nil {
-		s.logger.Printf("[ERROR] %s", result.Error)
-		return result.Error
-	}
-	s.logger.Printf("[UPDATE] Updated contact with name '%s' and company_id '%d' with id %d ", contact.Name, contact.CompanyId, contact.Id)
-	return nil
-}
-func (s MariaDBStore) RemoveContact(id int) error {
-	contact, err := s.GetContact(id)
-	if err != nil {
-		return err
-	}
-	result := s.db.Delete(contact)
-	if result.Error != nil {
-		return result.Error
-	}
-	s.logger.Printf("[DELETE] Deleted contact with name '%s' and company_id '%d' with id %d ", contact.Name, contact.CompanyId, contact.Id)
 	return nil
 }
