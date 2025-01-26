@@ -31,9 +31,9 @@ func (s MariaDBStore) GetApplication(Id uint) (*models.JobApplication, error) {
 	s.logger.Printf("[GET] Got job application with position '%s' and company '%s' with id %d ", application.Position, application.Company.Name, application.ID)
 	return &application, nil
 }
-func (s MariaDBStore) ListApplications() ([]models.JobApplication, error) {
+func (s MariaDBStore) ListApplications(userID uint) ([]models.JobApplication, error) {
 	var applications []models.JobApplication
-	s.db.Preload("Company.Contacts").Preload("Company").Find(&applications)
+	s.db.Preload("Company.Contacts").Preload("Company").Find(&applications, &models.JobApplication{UserID: userID})
 	s.logger.Printf("[LIST] Got %d job applications", len(applications))
 	return applications, nil
 }

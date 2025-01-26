@@ -8,7 +8,7 @@ import (
 	"github.com/even44/JobsearchAPI/pkg/initializers"
 )
 
-var logger *log.Logger = log.New(os.Stdout, "[COMMON HANDLER]", log.Ldate+log.Ltime+log.Lmsgprefix)
+var logger *log.Logger = log.New(os.Stdout, "[COMMON]", log.Ldate+log.Ltime+log.Lmsgprefix)
 
 func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
