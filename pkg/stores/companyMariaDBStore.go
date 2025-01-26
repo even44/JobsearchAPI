@@ -12,14 +12,13 @@ func (s MariaDBStore) AddCompany(company models.Company) (*models.Company, error
 	err := s.db.First(&models.Company{}, models.Company{Name: company.Name, Location: company.Location, UserID: company.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.Printf("[WARN][ADD] Company with name %s and location %s already exists and will not be created", company.Name, company.Location)
-		s.db.First(&company, &models.Company{Name: company.Name, Location: company.Location})
-		return &company, err
+		return nil, err
 	}
 
 	s.logger.Printf("[ADD] Company with name %s and location %s does not exist and will be created", company.Name, company.Location)
 	result := s.db.Omit("Contacts").Create(&company)
 	if result.Error != nil {
-		return &company, result.Error
+		return nil, result.Error
 	}
 
 	resCompany, err := s.GetCompany(company.ID)

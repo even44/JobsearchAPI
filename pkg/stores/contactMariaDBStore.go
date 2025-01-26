@@ -12,8 +12,7 @@ func (s MariaDBStore) AddContact(contact models.Contact) (*models.Contact, error
 	err := s.db.First(&models.Contact{}, models.Contact{Name: contact.Name, UserID: contact.UserID}).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		s.logger.Printf("[WARN][ADD] Contact with name %s already exists and will not be created", contact.Name)
-		s.db.First(&contact, &models.Contact{Name: contact.Name})
-		return &contact, err
+		return nil, err
 	}
 	s.logger.Printf("[ADD] Contact with name %s does not exist and will be created", contact.Name)
 	result := s.db.Create(&contact)
