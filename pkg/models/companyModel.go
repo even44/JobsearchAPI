@@ -5,8 +5,8 @@ import "gorm.io/gorm"
 type Company struct {
 	gorm.Model
 	UserID   uint
-	Name     string    `json:"name" gorm:"index:idx_name,unique"`
-	Location string    `json:"location" gorm:"index:idx_name,unique"`
+	Name     string    `json:"name"`
+	Location string    `json:"location"`
 	Status   string    `json:"status"`
 	Notes    string    `json:"notes"`
 	Website  string    `json:"website"`
