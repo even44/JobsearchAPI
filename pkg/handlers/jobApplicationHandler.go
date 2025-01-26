@@ -12,6 +12,7 @@ import (
 	"github.com/even44/JobsearchAPI/pkg/stores"
 	"github.com/gorilla/mux"
 )
+
 var JAH *JobApplicationsHandler
 
 type JobApplicationsHandler struct {
@@ -40,7 +41,7 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 		return
 	}
 
-	resultJobApplication, err := h.store.AddApplication(jobApplication.Id, jobApplication)
+	resultJobApplication, err := h.store.AddApplication(jobApplication)
 	if err != nil {
 		h.logger.Println(err.Error())
 		InternalServerErrorHandler(w, r)
@@ -201,7 +202,3 @@ func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 
 }
-
-
-
-

@@ -41,7 +41,7 @@ func (h CompanyHandler) CreateCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultCompany, err := h.store.AddCompany(company.Id, company)
+	resultCompany, err := h.store.AddCompany(company)
 	if err != nil {
 		h.logger.Fatal(err.Error())
 		InternalServerErrorHandler(w, r)
