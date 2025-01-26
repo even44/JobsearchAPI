@@ -78,6 +78,7 @@ func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplicati
 
 	company, err := s.GetCompany(application.CompanyID)
 	if err != nil {
+		s.logger.Printf("[WARN][UPDATE] Could not get company")
 		return err
 	}
 
@@ -86,6 +87,7 @@ func (s MariaDBStore) UpdateApplication(id uint, application models.JobApplicati
 		s.logger.Printf("[WARN][UPDATE] Contact does not exist")
 	}
 
+	s.logger.Printf("COMPANY USERID: %d, APPLICATION USERID: %d", company.UserID, application.UserID)
 	if company.UserID != application.UserID {
 		s.logger.Printf("[WARN][UPDATE] Company exists but does not belong to this user, aborting...")
 		return fmt.Errorf("invalid company id")
