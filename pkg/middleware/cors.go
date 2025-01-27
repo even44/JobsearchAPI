@@ -23,6 +23,7 @@ func Cors(next http.Handler) http.Handler {
 
 		corsLogger.Println("Adding CORS Headers")
 		w.Header().Set("Access-Control-Allow-Headers", "content-type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE")
 		next.ServeHTTP(w, r)
