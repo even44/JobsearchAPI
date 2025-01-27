@@ -44,23 +44,29 @@ func main() {
 	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.GetJobApplication).Methods("GET")
 	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.UpdateJobApplication).Methods("PUT")
 	auth.HandleFunc("/jobapplications/{id}", handlers.JAH.DeleteJobApplication).Methods("DELETE")
-
+	auth.HandleFunc("/jobapplications", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/jobapplications/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
 	auth.HandleFunc("/companies", handlers.CompanyH.ListCompanies).Methods("GET")
 	auth.HandleFunc("/companies", handlers.CompanyH.CreateCompany).Methods("POST")
 	auth.HandleFunc("/companies/{id}", handlers.CompanyH.GetCompany).Methods("GET")
 	auth.HandleFunc("/companies/{id}", handlers.CompanyH.UpdateCompany).Methods("PUT")
 	auth.HandleFunc("/companies/{id}", handlers.CompanyH.DeleteCompany).Methods("DELETE")
+	auth.HandleFunc("/companies", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/companies/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
 	auth.HandleFunc("/contacts", handlers.ContactH.ListContacts).Methods("GET")
 	auth.HandleFunc("/contacts", handlers.ContactH.CreateContact).Methods("POST")
 	auth.HandleFunc("/contacts/{id}", handlers.ContactH.GetContact).Methods("GET")
 	auth.HandleFunc("/contacts/{id}", handlers.ContactH.UpdateContact).Methods("PUT")
 	auth.HandleFunc("/contacts/{id}", handlers.ContactH.DeleteContact).Methods("DELETE")
-
+	auth.HandleFunc("/contacts", handlers.PreFlightHandler).Methods("OPTIONS")
+	auth.HandleFunc("/contacts/{id}", handlers.PreFlightHandler).Methods("OPTIONS")
 
 	public.HandleFunc("/signup", handlers.UH.SignUp).Methods("POST")
+	public.HandleFunc("/signup", handlers.PreFlightHandler).Methods("OPTIONS")
 	public.HandleFunc("/login", handlers.UH.Login).Methods("POST")
+	public.HandleFunc("/login", handlers.PreFlightHandler).Methods("OPTIONS")
 
 	global.Use(middleware.Logging)
 	global.Use(middleware.Cors)

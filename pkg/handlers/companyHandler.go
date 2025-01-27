@@ -28,10 +28,6 @@ func NewCompanyHandler(s stores.CompanyStore) *CompanyHandler {
 }
 
 func (h CompanyHandler) CreateCompany(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -62,10 +58,6 @@ func (h CompanyHandler) CreateCompany(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h CompanyHandler) ListCompanies(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -92,10 +84,7 @@ func (h CompanyHandler) ListCompanies(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to get company with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
@@ -136,10 +125,6 @@ func (h CompanyHandler) GetCompany(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to update company with id %s from: %s", strId, r.Host)
@@ -194,10 +179,7 @@ func (h CompanyHandler) UpdateCompany(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 func (h CompanyHandler) DeleteCompany(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to delete company with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)

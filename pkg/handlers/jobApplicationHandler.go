@@ -28,10 +28,6 @@ func NewJobApplicationHandler(s stores.JobApplicationStore) *JobApplicationsHand
 }
 
 func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	logger.Printf("User id: %d", user.ID)
@@ -62,11 +58,6 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 
 }
 func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -93,10 +84,6 @@ func (h JobApplicationsHandler) ListJobApplications(w http.ResponseWriter, r *ht
 
 }
 func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -138,10 +125,6 @@ func (h JobApplicationsHandler) GetJobApplication(w http.ResponseWriter, r *http
 	w.Write(jsonBytes)
 }
 func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -201,10 +184,6 @@ func (h JobApplicationsHandler) UpdateJobApplication(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 func (h JobApplicationsHandler) DeleteJobApplication(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)

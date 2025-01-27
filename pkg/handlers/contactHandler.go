@@ -28,10 +28,6 @@ func NewContactHandler(s stores.ContactStore) *ContactHandler {
 }
 
 func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -62,10 +58,7 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -92,10 +85,7 @@ func (h ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to get contact with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
@@ -136,10 +126,7 @@ func (h ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to update contact with id %s from: %s", strId, r.Host)
@@ -195,10 +182,7 @@ func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 func (h ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
-	if !checkOrigin(&w, r) {
-		return
-	}
-	enableCors(&w)
+
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to delete contact with id %s from: %s", strId, r.Host)
 	id, err := strconv.Atoi(strId)
