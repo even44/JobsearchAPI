@@ -99,6 +99,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly:    true,
 		Secure:      true,
 		Partitioned: true,
+		SameSite: http.SameSiteDefaultMode,
 		Path:        "/auth",
 	})
 	if err != nil {
