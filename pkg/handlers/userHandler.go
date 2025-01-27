@@ -93,11 +93,13 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := token.SignedString([]byte(initializers.ApiSecret))
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "Authorization",
-		Value:    tokenString,
-		MaxAge:   3600 * 24 * 30,
-		HttpOnly: true,
-		Path:     "/auth",
+		Name:        "Authorization",
+		Value:       tokenString,
+		MaxAge:      3600 * 24 * 30,
+		HttpOnly:    true,
+		Secure:      true,
+		Partitioned: true,
+		Path:        "/auth",
 	})
 	if err != nil {
 		InternalServerErrorHandler(w, r)
