@@ -17,6 +17,12 @@ var authLogger *log.Logger = log.New(os.Stdout, "[AUTH] ", log.Ldate+log.Ltime+l
 
 func RequireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method == "OPTIONS" {
+			authLogger.Printf("Request had method OPTIONS and do not require a token")
+			next.ServeHTTP(w, r)
+		}
+
 		// Get cookie
 		authCookie, err := r.Cookie("Authorization")
 
