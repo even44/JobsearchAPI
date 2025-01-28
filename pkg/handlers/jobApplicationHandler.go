@@ -33,13 +33,13 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 	logger.Printf("User id: %d", user.ID)
 
 	var jobApplication models.JobApplication
-	jobApplication.UserID = user.ID
+	
 	h.logger.Printf("Received request to create job application from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
 		logger.Printf("[ERROR] Received following error while parsing request JSON: \n%s", err)
 		logger.Printf("%#v", jobApplication)
 	}
-
+	jobApplication.UserID = user.ID
 	resultJobApplication, err := h.store.AddApplication(jobApplication)
 	if err != nil {
 		h.logger.Println(err.Error())
