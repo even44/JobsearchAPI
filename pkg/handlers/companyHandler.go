@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 	"fmt"
 	"log"
 	"net/http"
