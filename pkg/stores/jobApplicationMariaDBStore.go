@@ -29,7 +29,7 @@ func (s MariaDBStore) AddApplication(application models.JobApplication) (*models
 		return nil, fmt.Errorf("invalid contact id")
 	}
 
-	if contact.CompanyID != application.CompanyID {
+	if contact != nil && contact.CompanyID != application.CompanyID {
 		s.logger.Printf("[WARN][ADD] Contact exists but does not belong to this company, aborting...")
 		return nil, fmt.Errorf("invalid contact id")
 	}
