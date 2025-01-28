@@ -37,7 +37,7 @@ func (h JobApplicationsHandler) CreateJobApplication(w http.ResponseWriter, r *h
 	h.logger.Printf("Received request to create job application from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&jobApplication); err != nil {
 		logger.Printf("[ERROR] Received following error while parsing request JSON: \n%s", err)
-		logger.Printf(jobApplication.Position, jobApplication.CompanyID, jobApplication.Done)
+		logger.Printf("%s %s %s", jobApplication.Position, jobApplication.CompanyID, jobApplication.Response)
 		BadRequestHandler(w, r)
 		return
 	}
