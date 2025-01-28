@@ -17,6 +17,7 @@ func (s MariaDBStore) AddApplication(application models.JobApplication) (*models
 	contact, err := s.GetContact(application.ContactID)
 	if err != nil {
 		s.logger.Printf("[WARN][ADD] Contact does not exist")
+		return nil, fmt.Errorf("invalid contact id")
 	}
 
 	if company.UserID != application.UserID {
