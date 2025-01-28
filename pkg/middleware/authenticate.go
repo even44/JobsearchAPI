@@ -21,6 +21,7 @@ func RequireAuth(next http.Handler) http.Handler {
 		if r.Method == "OPTIONS" {
 			authLogger.Printf("Request had method OPTIONS and do not require a token")
 			next.ServeHTTP(w, r)
+			return
 		}
 
 		// Get cookie
