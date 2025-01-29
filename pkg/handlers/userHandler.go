@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github.com/goccy/go-json"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/goccy/go-json"
 
 	"github.com/even44/JobsearchAPI/pkg/initializers"
 	"github.com/even44/JobsearchAPI/pkg/models"
@@ -106,5 +107,16 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+
+	var loginResponse models.LoginResponse
+	loginResponse.Email = user.Email
+
+	jsonBytes, err := json.Marshal(loginResponse)
+	if err != nil {
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write(jsonBytes)
 }
