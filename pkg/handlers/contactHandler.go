@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"github.com/goccy/go-json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/goccy/go-json"
 
 	"github.com/even44/JobsearchAPI/pkg/models"
 	"github.com/even44/JobsearchAPI/pkg/stores"
@@ -33,14 +34,14 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 	h.logger.Printf("User id: %d", user.ID)
 
 	var contact models.Contact
-	contact.UserID = user.ID
+
 	h.logger.Printf("Received request to create contact from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-
+	contact.UserID = user.ID
 	resultContact, err := h.store.AddContact(contact)
 	if err != nil {
 		h.logger.Println(err.Error())
@@ -58,7 +59,6 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
-
 
 	var user *models.User = r.Context().Value(models.User{}).(*models.User)
 	h.logger.Printf("User id: %d", user.ID)
@@ -126,7 +126,6 @@ func (h ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 func (h ContactHandler) UpdateContact(w http.ResponseWriter, r *http.Request) {
-
 
 	strId := mux.Vars(r)["id"]
 	h.logger.Printf("Received request to update contact with id %s from: %s", strId, r.Host)
@@ -210,7 +209,6 @@ func (h ContactHandler) DeleteContact(w http.ResponseWriter, r *http.Request) {
 		BadRequestHandler(w, r)
 		return
 	}
-
 
 	err = h.store.RemoveContact(uint(id))
 

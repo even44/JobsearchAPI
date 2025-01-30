@@ -33,14 +33,14 @@ func (h CompanyHandler) CreateCompany(w http.ResponseWriter, r *http.Request) {
 	h.logger.Printf("User id: %d", user.ID)
 
 	var company models.Company
-	company.UserID = user.ID
+	
 	h.logger.Printf("Received request to create company from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
 		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
-
+	company.UserID = user.ID
 	resultCompany, err := h.store.AddCompany(company)
 	if err != nil {
 		h.logger.Println(err.Error())
