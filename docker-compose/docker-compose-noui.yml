@@ -9,11 +9,12 @@ services:
       - db
     environment:
       API_PORT: 3001
-      TRUSTED_ORIGIN: http://localhost:4200
+      TRUSTED_ORIGIN: http://172.30.20.200:4200
       DB_USER: root
       DB_PASSWORD: superroot
       DB_URL: db
       DB_PORT: 3306
+      SECURE_COOKIES: false
 
   db:
     container_name: MariaDB

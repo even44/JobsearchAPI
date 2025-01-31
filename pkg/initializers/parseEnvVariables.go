@@ -9,6 +9,7 @@ import (
 var ApiPort int = 3001
 var ApiTrustedOrigin string = ""
 var ApiSecret string = "setthisasasecretenv"
+var CookiesSecure bool = true
 
 // Db Envs
 var DbURL = ""

@@ -98,7 +98,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:       tokenString,
 		MaxAge:      3600 * 24 * 30,
 		HttpOnly:    true,
-		Secure:      true,
+		Secure:      initializers.CookiesSecure,
 		Partitioned: true,
 		SameSite:    http.SameSiteNoneMode,
 		Path:        "/auth",
