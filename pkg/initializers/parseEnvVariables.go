@@ -64,8 +64,17 @@ func ParseEnvVariables() {
 		}
 	}
 
-	temp = os.Getenv("DB_PORT")
+	temp = os.Getenv("API_SECRET")
 	if temp != "" {
 		ApiSecret = temp
+	}
+
+	temp = os.Getenv("SECURE_COOKIES")
+	if temp != "" {
+		var err error
+		CookiesSecure, err = strconv.ParseBool(temp)
+		if err != nil {
+			logger.Printf("Could not parse %s to bool", temp)
+		}
 	}
 }
