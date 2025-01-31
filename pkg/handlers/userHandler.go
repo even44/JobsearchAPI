@@ -112,7 +112,7 @@ func (h UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 			MaxAge:      3600 * 24 * 30,
 			HttpOnly:    true,
 			Secure:      false,
-			Partitioned: true,
+			Partitioned: false,
 			SameSite:    http.SameSiteLaxMode,
 			Path:        "/auth",
 		})
