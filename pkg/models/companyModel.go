@@ -1,9 +1,8 @@
 package models
 
-import "gorm.io/gorm"
 
 type Company struct {
-	gorm.Model
+	ID	 uint	   `json:"ID" gorm:"primarykey"`           
 	UserID   uint      `json:"user_id"`
 	Name     string    `json:"name"`
 	Location string    `json:"location"`
