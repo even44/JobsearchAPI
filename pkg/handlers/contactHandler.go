@@ -37,7 +37,9 @@ func (h ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Printf("Received request to create contact from: %s", r.Host)
 	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while parsing request JSON: \n%s", err.Error()))
+		print(fmt.Sprintf(
+			"[ERROR] Received following error while parsing request JSON: \n%s", 
+			err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -66,7 +68,9 @@ func (h ContactHandler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	h.logger.Printf("Received request to list contacts from: %s", r.Host)
 	contacts, err := h.store.ListContacts(user.ID)
 	if err != nil {
-		print(fmt.Sprintf("[ERROR] Received following error while getting contact list: \n%s", err.Error()))
+		print(fmt.Sprintf(
+			"[ERROR] Received following error while getting contact list: \n%s", 
+			err.Error()))
 		InternalServerErrorHandler(w, r)
 		return
 	}

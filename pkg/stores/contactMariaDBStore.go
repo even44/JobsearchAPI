@@ -43,7 +43,7 @@ func (s MariaDBStore) GetContact(id uint) (*models.Contact, error) {
 }
 func (s MariaDBStore) ListContacts(userID uint) ([]models.Contact, error) {
 	var contacts []models.Contact
-	s.db.Find(&contacts, &models.Contact{UserID: userID})
+	s.db.Preload("Company").Find(&contacts, &models.Contact{UserID: userID})
 	s.logger.Printf("[LIST] Got %d companies", len(contacts))
 	return contacts, nil
 }
