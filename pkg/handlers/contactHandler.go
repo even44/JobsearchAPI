@@ -1,5 +1,5 @@
 package handlers
-//Test
+
 import (
 	"fmt"
 	"log"
