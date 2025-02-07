@@ -4,3 +4,4 @@ docker-compose
 .env
 *.code-workspace
 cmd.exe
+.vscode

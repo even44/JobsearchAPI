@@ -10,7 +10,7 @@ RUN go mod download && go mod verify
 
 # Copy rest of the files then build the app
 COPY . .
-RUN go build -v -o /usr/local/bin/app/ ./...
+RUN go build -v -o /usr/local/bin/app/ ./
 
 FROM scratch
 
@@ -19,4 +19,4 @@ COPY --from=build /usr/local/bin/app/ .
 ENV API_PORT="3001"
 ENV TRUSTED_ORIGIN="http://localhost:4200"
 
-CMD ["./cmd"]
+CMD ["./JobsearchAPI"]

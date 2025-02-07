@@ -8,15 +8,20 @@ services:
     depends_on:
       - db
     environment:
-      API_PORT: 3002
-      TRUSTED_ORIGIN: http://localhost:3001
+      API_PORT: 3001
+      TRUSTED_ORIGIN: http://172.30.20.200:4200
+      DB_USER: root
+      DB_PASSWORD: superroot
+      DB_URL: db
+      DB_PORT: 3306
+      SECURE_COOKIES: false
 
   db:
     container_name: MariaDB
     image: mariadb
     restart: always
     ports:
-      - "3307:3306"
+      - "3306"
     volumes:
       - "./data:/var/lib/mysql:Z"
     environment:
